@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
@@ -47,13 +49,23 @@ import io.github.yuuichi_s.astertune.models.MediaMetadata
 import io.github.yuuichi_s.astertune.ui.component.Lyrics
 import io.github.yuuichi_s.astertune.utils.rememberPreference
 
+/**
+ * Displays the player's artwork, lyrics, or a playback error.
+ *
+ * @param sliderPositionProvider Returns the slider position in milliseconds for lyrics,
+ *     or null to use the player's current position.
+ * @param customMediaMetadata Metadata used only for artwork; null uses the current media item.
+ * @param onArtworkPositioned Receives the artwork's layout coordinates whenever its position or size
+ *     changes. Does not report artwork removal.
+ */
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun Thumbnail(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
     showLyricsOnClick: Boolean = false,
-    customMediaMetadata: MediaMetadata? = null
+    customMediaMetadata: MediaMetadata? = null,
+    onArtworkPositioned: ((LayoutCoordinates) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val currentView = LocalView.current
@@ -99,6 +111,7 @@ fun Thumbnail(
                         contentDescription = null,
                         modifier = Modifier
                             .aspectRatio(1f)
+                            .onGloballyPositioned { onArtworkPositioned?.invoke(it) }
                             .clip(RoundedCornerShape(ThumbnailCornerRadius * 2))
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },

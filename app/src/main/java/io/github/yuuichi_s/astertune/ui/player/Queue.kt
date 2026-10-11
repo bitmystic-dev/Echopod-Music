@@ -184,8 +184,6 @@ fun QueueSheet(
         modifier = modifier,
         collapsedContent = {
             if (PLAYER_DEBUG) Log.v("QueueSheet", "Q-2")
-            val showQueueTitle by rememberPreference(ShowQueueTitleKey, defaultValue = true)
-            val queueTitle = if (showQueueTitle) currentQueueTitle(LocalPlayerConnection.current) else null
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
@@ -204,19 +202,7 @@ fun QueueSheet(
                     tint = MaterialTheme.colorScheme.onSurface,
                     contentDescription = null,
                 )
-                if (!queueTitle.isNullOrBlank()) {
-                    Text(
-                        text = queueTitle,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    )
-                }
+                QueueHandleTitle()
             }
         },
     ) {
@@ -227,6 +213,28 @@ fun QueueSheet(
             navController = navController
         )
     }
+}
+
+/**
+ * Displays the name of the queue currently loaded in the player under the queue handle's chevron,
+ * when enabled in settings.
+ */
+@Composable
+fun QueueHandleTitle() {
+    val showQueueTitle by rememberPreference(ShowQueueTitleKey, defaultValue = true)
+    val queueTitle = if (showQueueTitle) currentQueueTitle(LocalPlayerConnection.current) else null
+    if (queueTitle.isNullOrBlank()) return
+    Text(
+        text = queueTitle,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        textAlign = TextAlign.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    )
 }
 
 /**

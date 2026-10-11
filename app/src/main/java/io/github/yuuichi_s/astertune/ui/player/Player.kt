@@ -40,8 +40,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
@@ -101,6 +103,9 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -173,6 +178,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -444,10 +450,12 @@ fun LandscapePlayer(
 
 
     val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+    val error by playerConnection.error.collectAsState()
 
     var sliderPosition by remember {
         mutableStateOf<Long?>(null)
     }
+    val queueHintAnchor = remember { QueueHintAnchor() }
 
     val dismissedBound = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
     val queueSheetState = rememberBottomSheetState(
@@ -491,7 +499,8 @@ fun LandscapePlayer(
 //                                .width(horizontalLazyGridItemWidth)
                         .animateContentSize(),
                     showLyricsOnClick = showLyricsOnClick,
-                    customMediaMetadata = mediaMetadata
+                    customMediaMetadata = mediaMetadata,
+                    onArtworkPositioned = queueHintAnchor::onArtworkPositioned
                 )
             } else {
                 val thumbnailLazyGridState = rememberLazyGridState()
@@ -548,7 +557,8 @@ fun LandscapePlayer(
                                 .width(horizontalLazyGridItemWidth)
                                 .animateContentSize(),
                             showLyricsOnClick = showLyricsOnClick,
-                            customMediaMetadata = it
+                            customMediaMetadata = it,
+                            onArtworkPositioned = queueHintAnchor::onArtworkPositioned
                         )
                     }
                 }
@@ -557,19 +567,46 @@ fun LandscapePlayer(
             PlayerCollapseButton(onCollapse = onCollapse, topInset = 0.dp)
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+        val showQueueHint = context.supportsWideScreen()
+        // Ignore the last artwork position while lyrics or a playback error are shown.
+        val artworkHidden = showLyrics || error != null
+        Layout(
+            content = {
+                ControlsContent(playerSheetState, queueSheetState, navController, queueBoard)
+                if (showQueueHint) {
+                    LandscapeQueueHint(queueSheetState)
+                }
+            },
             modifier = Modifier
                 // "percentage to half width", not "percentage of width"
                 .weight(if (showLyrics) 0.65f else 1f, false)
                 .animateContentSize()
                 .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
-        ) {
-            Spacer(Modifier.weight(1f))
+                .fillMaxHeight()
+                .onGloballyPositioned(queueHintAnchor::onColumnPositioned)
+        ) { measurables, constraints ->
+            val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+            val controls = placeables[0]
+            val hint = placeables.getOrNull(1)
+            val width = placeables.maxOf { it.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
+            val height = constraints.maxHeight
+            layout(width, height) {
+                // Center the controls as if the hint sat directly below them
+                val controlsY = (height - controls.height - (hint?.height ?: 0)) / 2
+                controls.place((width - controls.width) / 2, controlsY)
+                if (hint == null) return@layout
 
-            ControlsContent(playerSheetState, queueSheetState, navController, queueBoard, context.supportsWideScreen())
-
-            Spacer(Modifier.weight(1f))
+                // Align the hint's bottom with the artwork when possible, keeping it below the controls.
+                val stackedY = controlsY + controls.height
+                // Read the artwork position here so that its changes only trigger a new placement.
+                val bottom = if (artworkHidden) null else queueHintAnchor.artworkBottom
+                val alignedY = if (bottom != null) {
+                    minOf(bottom.roundToInt(), height) - hint.height
+                } else {
+                    stackedY
+                }
+                hint.place((width - hint.width) / 2, maxOf(stackedY, alignedY))
+            }
         }
     }
 
@@ -583,6 +620,37 @@ fun LandscapePlayer(
             },
             navController = navController
         )
+    }
+}
+
+/**
+ * Tracks the bottom edge of the landscape player's artwork in the coordinates of its controls column.
+ *
+ * Positions are read only after layout, because a layout that reads coordinates while placing is
+ * placed again whenever an ancestor moves, such as on every frame of a player sheet drag.
+ */
+private class QueueHintAnchor {
+    private var artwork: LayoutCoordinates? = null
+    private var column: LayoutCoordinates? = null
+
+    /** Bottom edge of the artwork, or null until both the artwork and the column are positioned. */
+    var artworkBottom by mutableStateOf<Float?>(null)
+        private set
+
+    fun onArtworkPositioned(coordinates: LayoutCoordinates) {
+        artwork = coordinates
+        update()
+    }
+
+    fun onColumnPositioned(coordinates: LayoutCoordinates) {
+        column = coordinates
+        update()
+    }
+
+    private fun update() {
+        val artwork = artwork?.takeIf { it.isAttached } ?: return
+        val column = column?.takeIf { it.isAttached } ?: return
+        artworkBottom = column.localBoundingBoxOf(artwork, clipBounds = false).bottom
     }
 }
 
@@ -809,7 +877,6 @@ fun ControlsContent(
     queueSheetState: BottomSheetState,
     navController: NavController,
     queueBoard: QueueBoard,
-    showQueueHint: Boolean = false,
 ) {
     val TAG = "ControlsContent()"
     if (PLAYER_DEBUG) Log.v(TAG, "PLR-CC-1")
@@ -1184,36 +1251,36 @@ fun ControlsContent(
                     )
                 }
             }
-
-            // queue hint for landscape
-            if (showQueueHint) {
-                Spacer(Modifier.height(12.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(QueuePeekHeight)
-                        .fillMaxWidth()
-                        .clickable(
-                            onClick = {
-                                queueSheetState.expandSoft()
-                                haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                            }
-                        )
-                ) {
-                    IconButton(onClick = {
-                        queueSheetState.expandSoft()
-                        haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
-                    }) {
-                        Icon(
-                            imageVector = Icons.Rounded.ExpandLess,
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            contentDescription = null,
-                        )
-                    }
-                }
-            }
         }
+    }
+}
+
+/**
+ * Displays a handle that opens the queue from the landscape player.
+ */
+@Composable
+private fun LandscapeQueueHint(queueSheetState: BottomSheetState) {
+    val haptic = LocalHapticFeedback.current
+    Column(
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(top = 12.dp)
+            .heightIn(min = QueuePeekHeight)
+            .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    queueSheetState.expandSoft()
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.ExpandLess,
+            tint = MaterialTheme.colorScheme.onSurface,
+            contentDescription = null,
+        )
+        QueueHandleTitle()
     }
 }
 
