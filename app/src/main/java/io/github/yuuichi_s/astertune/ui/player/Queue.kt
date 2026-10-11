@@ -216,7 +216,7 @@ fun QueueSheet(
 }
 
 /**
- * Displays the name of the queue currently loaded in the player under the queue handle's chevron,
+ * Displays the name of the current queue under the queue handle's chevron,
  * when enabled in settings.
  */
 @Composable
@@ -238,7 +238,8 @@ fun QueueHandleTitle() {
 }
 
 /**
- * Title of the queue currently loaded in the player, or null when nothing is loaded.
+ * Title of the current queue, including one restored but not yet loaded into the player,
+ * or null when there is no queue.
  */
 @Composable
 private fun currentQueueTitle(playerConnection: PlayerConnection?): String? {
@@ -246,8 +247,7 @@ private fun currentQueueTitle(playerConnection: PlayerConnection?): String? {
     val queueBoard by playerConnection.queueBoard.collectAsState()
     // `masterIndex` is not observable; queue switches update the player timeline, and renames
     // edit the `masterQueues` list that `getCurrentQueue()` reads below.
-    val queueWindows by playerConnection.queueWindows.collectAsState()
-    if (queueWindows.isEmpty()) return null
+    playerConnection.queueWindows.collectAsState().value
     return queueBoard.getCurrentQueue()?.title
 }
 
