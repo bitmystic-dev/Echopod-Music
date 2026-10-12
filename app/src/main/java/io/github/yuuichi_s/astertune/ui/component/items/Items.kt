@@ -54,6 +54,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -449,9 +450,8 @@ private fun YouTubeItemBadges(item: YTItem) = key(item.id) {
         is SongItem -> {
             val song by remember(database) { database.song(item.id) }
                 .collectAsState(initial = null)
-            val downloadUtil = LocalDownloadUtil.current
-            val download by remember(downloadUtil) { downloadUtil.getDownload(item.id) }
-                .collectAsState(initial = downloadUtil.downloads.value[item.id])
+            val downloads by LocalDownloadUtil.current.downloads.collectAsState()
+            val download by remember { derivedStateOf { downloads[item.id] } }
 
             if (song?.song?.liked == true) {
                 Icon.Favorite()
