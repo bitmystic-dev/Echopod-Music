@@ -2,6 +2,7 @@ package io.github.yuuichi_s.astertune.db
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.core.content.contentValuesOf
 import androidx.room.AutoMigration
 import androidx.room.Database
@@ -16,6 +17,7 @@ import androidx.room.migration.AutoMigrationSpec
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
+import io.github.yuuichi_s.astertune.constants.DB_QUERY_DEBUG
 import io.github.yuuichi_s.astertune.db.MusicDatabase.Companion.MUSIC_DATABASE_VERSION
 import io.github.yuuichi_s.astertune.db.entities.AlbumArtistMap
 import io.github.yuuichi_s.astertune.db.entities.AlbumEntity
@@ -41,6 +43,7 @@ import io.github.yuuichi_s.astertune.db.entities.SongGenreMap
 import io.github.yuuichi_s.astertune.db.entities.SortedSongAlbumMap
 import io.github.yuuichi_s.astertune.db.entities.SortedSongArtistMap
 import io.github.yuuichi_s.astertune.extensions.toSQLiteQuery
+import kotlinx.coroutines.Dispatchers
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -146,6 +149,13 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
+                    .apply {
+                        if (DB_QUERY_DEBUG) {
+                            setQueryCallback(Dispatchers.Unconfined) { sqlQuery, bindArgs ->
+                                Log.d("DbQuery", "$sqlQuery $bindArgs")
+                            }
+                        }
+                    }
                     .build()
             )
 
