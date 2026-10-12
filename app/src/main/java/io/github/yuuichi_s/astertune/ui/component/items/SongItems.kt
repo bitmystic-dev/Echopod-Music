@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -122,8 +123,10 @@ fun SongListItem(
                 } else if (showInLibraryIcon && song.song.inLibrary != null) {
                     Icon.Library()
                 }
-                if (showDownloadIcon && !song.song.isLocal) {
-                    val download by LocalDownloadUtil.current.getDownload(song.id).collectAsState(initial = null)
+                if (showDownloadIcon && !song.song.isLocal) key(song.id) {
+                    val downloadUtil = LocalDownloadUtil.current
+                    val download by remember(downloadUtil) { downloadUtil.getDownload(song.id) }
+                        .collectAsState(initial = downloadUtil.downloads.value[song.id])
                     Icon.Download(download)
                 }
             },

@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.yuuichi_s.astertune.constants.InnerTubeCookieKey
-import io.github.yuuichi_s.astertune.constants.PlaylistFilter
-import io.github.yuuichi_s.astertune.constants.PlaylistSortType
 import io.github.yuuichi_s.astertune.db.MusicDatabase
 import io.github.yuuichi_s.astertune.db.entities.Album
 import io.github.yuuichi_s.astertune.db.entities.LocalItem
@@ -24,6 +22,7 @@ import com.zionhuang.innertube.utils.completed
 import com.zionhuang.innertube.utils.parseCookieString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,8 +55,6 @@ class HomeViewModel @Inject constructor(
     val selectedChip = MutableStateFlow<HomePage.Chip?>(null)
     private val previousHomePage = MutableStateFlow<HomePage?>(null)
     val explorePage = MutableStateFlow<ExplorePage?>(null)
-    val playlists = database.playlists(PlaylistFilter.LIBRARY, PlaylistSortType.NAME, true)
-        .stateIn(viewModelScope, SharingStarted.Lazily, null)
     val recentActivity = database.recentActivity()
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
@@ -195,6 +192,22 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * Returns the ID of a non-empty library playlist matching [browseId],
+     * or null to open it online.
+     */
+    suspend fun localPlaylistIdToOpen(browseId: String): String? =
+        try {
+            database.libraryPlaylistByBrowseId(browseId).first()
+                ?.takeIf { it.songCount != 0 }
+                ?.id
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            reportException(e)
+            null
+        }
 
     fun toggleChip(chip: HomePage.Chip?) {
         if (chip == null || chip == selectedChip.value && previousHomePage.value != null) {

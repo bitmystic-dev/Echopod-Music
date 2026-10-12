@@ -10,7 +10,6 @@
 
 package io.github.yuuichi_s.astertune.ui.component.items
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
@@ -56,6 +55,8 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -398,25 +399,7 @@ fun YouTubeListItem(
     albumIndex: Int? = null,
     isSelected: Boolean = false,
     badges: @Composable RowScope.() -> Unit = {
-        val database = LocalDatabase.current
-        val song by database.song(item.id).collectAsState(initial = null)
-        val album by database.album(item.id).collectAsState(initial = null)
-
-        if (item is SongItem && song?.song?.liked == true ||
-            item is AlbumItem && album?.album?.bookmarkedAt != null
-        ) {
-            Icon.Favorite()
-        }
-        if (item.explicit) {
-            Icon.Explicit()
-        }
-        if (item is SongItem && song?.song?.inLibrary != null) {
-            Icon.Library()
-        }
-        if (item is SongItem) {
-            val downloads by LocalDownloadUtil.current.downloads.collectAsState()
-            Icon.Download(downloads[item.id])
-        }
+        YouTubeItemBadges(item)
     },
     isActive: Boolean = false,
     isPlaying: Boolean = false,
@@ -458,31 +441,55 @@ fun YouTubeListItem(
     )
 }
 
+/** Default badges of [YouTubeListItem] and [YouTubeGridItem]. */
+@Composable
+private fun YouTubeItemBadges(item: YTItem) = key(item.id) {
+    val database = LocalDatabase.current
+    when (item) {
+        is SongItem -> {
+            val song by remember(database) { database.song(item.id) }
+                .collectAsState(initial = null)
+            val downloadUtil = LocalDownloadUtil.current
+            val download by remember(downloadUtil) { downloadUtil.getDownload(item.id) }
+                .collectAsState(initial = downloadUtil.downloads.value[item.id])
+
+            if (song?.song?.liked == true) {
+                Icon.Favorite()
+            }
+            if (item.explicit) {
+                Icon.Explicit()
+            }
+            if (song?.song?.inLibrary != null) {
+                Icon.Library()
+            }
+            Icon.Download(download)
+        }
+
+        is AlbumItem -> {
+            val album by remember(database) { database.album(item.id) }
+                .collectAsState(initial = null)
+
+            if (album?.album?.bookmarkedAt != null) {
+                Icon.Favorite()
+            }
+            if (item.explicit) {
+                Icon.Explicit()
+            }
+        }
+
+        else -> if (item.explicit) {
+            Icon.Explicit()
+        }
+    }
+}
+
 @Composable
 fun YouTubeGridItem(
     item: YTItem,
     modifier: Modifier = Modifier,
     coroutineScope: CoroutineScope? = null,
     badges: @Composable RowScope.() -> Unit = {
-        val database = LocalDatabase.current
-        val song by database.song(item.id).collectAsState(initial = null)
-        val album by database.album(item.id).collectAsState(initial = null)
-
-        if (item is SongItem && song?.song?.liked == true ||
-            item is AlbumItem && album?.album?.bookmarkedAt != null
-        ) {
-            Icon.Favorite()
-        }
-        if (item.explicit) {
-            Icon.Explicit()
-        }
-        if (item is SongItem && song?.song?.inLibrary != null) {
-            Icon.Library()
-        }
-        if (item is SongItem) {
-            val downloads by LocalDownloadUtil.current.downloads.collectAsState()
-            Icon.Download(downloads[item.id])
-        }
+        YouTubeItemBadges(item)
     },
     thumbnailRatio: Float = if (item is SongItem) 16f / 9 else 1f,
     isActive: Boolean = false,
@@ -652,7 +659,6 @@ fun YouTubeCardItem(
     }
 }
 
-@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun ItemThumbnail(
     thumbnailUrl: String?,
@@ -666,7 +672,7 @@ fun ItemThumbnail(
 ) {
     val context = LocalContext.current
 
-    BoxWithConstraints(
+    Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
     ) {

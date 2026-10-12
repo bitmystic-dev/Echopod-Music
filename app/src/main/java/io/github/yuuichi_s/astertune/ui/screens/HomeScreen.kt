@@ -143,7 +143,6 @@ fun HomeScreen(
     val accountPlaylists by viewModel.accountPlaylists.collectAsState()
     val homePage by viewModel.homePage.collectAsState()
     val explorePage by viewModel.explorePage.collectAsState()
-    val playlists by viewModel.playlists.collectAsState()
     val recentActivity by viewModel.recentActivity.collectAsState()
 
     val selectedChip by viewModel.selectedChip.collectAsState()
@@ -466,13 +465,16 @@ fun HomeScreen(
                                 onClick = {
                                     when (item.type) {
                                         RecentActivityType.PLAYLIST -> {
-                                            val playlistDb = playlists?.firstOrNull {
-                                                it.playlist.browseId == item.id
-                                            }
-                                            if (playlistDb != null && playlistDb.songCount != 0) {
-                                                navController.navigate("local_playlist/${playlistDb.id}")
-                                            } else {
-                                                navController.navigate("online_playlist/${item.id}")
+                                            val entryAtTap = navController.currentBackStackEntry
+                                            scope.launch {
+                                                val localPlaylistId = viewModel.localPlaylistIdToOpen(item.id)
+                                                // Skip when another tap or navigation has already moved away.
+                                                if (navController.currentBackStackEntry != entryAtTap) return@launch
+                                                if (localPlaylistId != null) {
+                                                    navController.navigate("local_playlist/$localPlaylistId")
+                                                } else {
+                                                    navController.navigate("online_playlist/${item.id}")
+                                                }
                                             }
                                         }
 

@@ -17,7 +17,11 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/** Sorting and filtering of [PlaylistsDao.playlists] and the order of [PlaylistsDao.playlistSongs] on the real Room queries. */
+/**
+ * Tests playlist sorting and filtering with [PlaylistsDao.playlists], song ordering with
+ * [PlaylistsDao.playlistSongs], and browse ID lookups with
+ * [PlaylistsDao.libraryPlaylistByBrowseId], using actual Room queries.
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [36])
 class PlaylistsDaoSortTest {
@@ -79,6 +83,38 @@ class PlaylistsDaoSortTest {
             val actual = database.playlistSongs(testPlaylist.entity.id).first().map { it.map.songId }
             assertEquals("playlistSongs ${testPlaylist.entity.id}", expected, actual)
         }
+    }
+
+    /** Checks browse ID lookups for library membership and song counts. */
+    @Test
+    fun libraryPlaylistByBrowseIdFindsOnlyLibraryPlaylists() = runBlocking {
+        // Local and not bookmarked, with a browse id.
+        database.insert(PlaylistEntity(id = "pl-local-india", name = "india", browseId = "PLindia", isLocal = true))
+        val expected = mapOf(
+            "PLmango" to ("pl-mango" to 3),
+            "PLalpha" to ("pl-alpha" to 0),
+            "PLindia" to ("pl-local-india" to 0),
+            "PLzulu" to null,
+            "PLmissing" to null,
+        )
+        for ((browseId, expectedRow) in expected) {
+            val row = database.libraryPlaylistByBrowseId(browseId).first()
+            assertEquals("libraryPlaylistByBrowseId $browseId", expectedRow, row?.let { it.id to it.songCount })
+        }
+    }
+
+    /**
+     * Checks that duplicate browse IDs select the last library playlist
+     * in case-insensitive name order.
+     */
+    @Test
+    fun libraryPlaylistByBrowseIdPicksTheLastNameAmongDuplicates() = runBlocking {
+        // "kilo" would come after "Lima" if case were compared.
+        database.insert(PlaylistEntity(id = "pl-dup-kilo", name = "kilo", browseId = "PLdup", bookmarkedAt = day(50)))
+        database.insert(PlaylistEntity(id = "pl-dup-lima", name = "Lima", browseId = "PLdup", isLocal = true))
+        // Last by name but not in the library.
+        database.insert(PlaylistEntity(id = "pl-dup-xray", name = "Xray", browseId = "PLdup"))
+        assertEquals("pl-dup-lima", database.libraryPlaylistByBrowseId("PLdup").first()?.id)
     }
 
     @Test

@@ -133,3 +133,6 @@ const val UI_DEBUG = false
 
 // enable verbose debugging details for manual lyrics searches
 const val LYRICS_DEBUG = false
+
+// log every SQL statement Room executes, with its bind arguments
+const val DB_QUERY_DEBUG = false
