@@ -255,7 +255,8 @@ class PlayerConnection(
 
     fun softKillPlayer() {
         Log.i(TAG, "Stopping player and uninitializing queue")
-        player.clearMediaItems()
+        // Save the queues while the player still holds the song and its position.
         service.deInitQueue()
+        player.clearMediaItems()
     }
 }

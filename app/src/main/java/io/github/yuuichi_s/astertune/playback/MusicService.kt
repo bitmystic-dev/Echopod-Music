@@ -712,11 +712,12 @@ class MusicService : MediaLibraryService(),
 
     fun deInitQueue() {
         if (SERVICE_DEBUG) Log.i(TAG, "+deInitQueue()")
-        val pos = player.currentPosition
+        recordCurrentSongPosition()
         queueBoard.value.shutdown()
-        if (dataStore.get(PersistentQueueKey, true)) {
+        // Saving before initQueue() has loaded the queues would delete every stored queue.
+        if (qbInit.value && dataStore.get(PersistentQueueKey, true)) {
             runBlocking(Dispatchers.IO) {
-                saveQueueToDisk(pos)
+                saveQueueToDisk()
             }
         }
         // Retain the QueueBoard and its in-memory queues while marking it uninitialized.
@@ -724,11 +725,20 @@ class MusicService : MediaLibraryService(),
         if (SERVICE_DEBUG) Log.i(TAG, "-deInitQueue()")
     }
 
-    suspend fun saveQueueToDisk(currentPosition: Long) {
-        val data = queueBoard.value.getAllQueues()
-        // The queue can be empty when the service is torn down before initQueue() finishes loading it.
-        data.lastOrNull()?.let { it.lastSongPos = currentPosition }
-        database.updateAllQueues(data)
+    suspend fun saveQueueToDisk() {
+        database.updateAllQueues(queueBoard.value.getAllQueues())
+    }
+
+    /**
+     * Stores the player position as the resume position of the current queue, if the player
+     * holds that queue's selected song.
+     */
+    private fun recordCurrentSongPosition() {
+        val q = queueBoard.value.getCurrentQueue() ?: return
+        val songId = player.currentMediaItem?.mediaId ?: return
+        if (q.queue.getOrNull(q.queuePos)?.id == songId) {
+            q.lastSongPos = player.currentPosition
+        }
     }
 
 
@@ -1176,9 +1186,7 @@ class MusicService : MediaLibraryService(),
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
-            val pos = player.currentPosition
-            val q = queueBoard.value.getCurrentQueue()
-            q?.lastSongPos = pos
+            recordCurrentSongPosition()
         }
         super.onIsPlayingChanged(isPlaying)
     }
@@ -1223,7 +1231,10 @@ class MusicService : MediaLibraryService(),
             }
         }
 
-        queueBoard.value.setCurrQueuePosIndex(player.currentMediaItemIndex)
+        // A null item means the player was emptied; the queue keeps its selected song.
+        if (mediaItem != null) {
+            queueBoard.value.setCurrQueuePosIndex(player.currentMediaItemIndex)
+        }
 
         // reshuffle queue when shuffle AND repeat all are enabled
         // no, when repeat mode is on, player does not "STATE_ENDED"

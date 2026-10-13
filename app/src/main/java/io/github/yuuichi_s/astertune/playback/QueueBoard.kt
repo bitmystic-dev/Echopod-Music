@@ -796,13 +796,18 @@ class QueueBoard(
     }
 
     /**
-     * Update the current position index of the current queue
+     * Update the current position index of the current queue. Selecting a different song clears
+     * the saved playback position.
      *
      * @param index Song index in playback order
      */
     fun setCurrQueuePosIndex(index: Int) {
         getCurrentQueue()?.let {
+            val previousSongId = it.queue.getOrNull(it.queuePos)?.id
             it.setCurrentQueuePos(index)
+            if (it.queue.getOrNull(it.queuePos)?.id != previousSongId) {
+                it.lastSongPos = C.TIME_UNSET
+            }
             saveQueue(it)
         }
     }
