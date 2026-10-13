@@ -581,7 +581,9 @@ class MusicService : MediaLibraryService(),
         title: String? = null
     ) {
         if (!qbInit.value) {
-            runBlocking(Dispatchers.IO) {
+            // Runs on the calling thread: when that is the main thread, initQueue() replaces the
+            // board in place instead of dispatching to the blocked main looper.
+            runBlocking {
                 initQueue()
             }
         }
@@ -700,10 +702,20 @@ class MusicService : MediaLibraryService(),
         if (SERVICE_DEBUG) Log.i(TAG, "+initQueue()")
         val persistQueue = dataStore.get(PersistentQueueKey, true)
         val maxQueues = dataStore.get(MaxQueuesKey, 19)
-        if (persistQueue) {
-            queueBoard.value = QueueBoard(this, queueBoard.value.masterQueues, database.readQueue().toMutableList(), maxQueues)
-        } else {
-            queueBoard.value = QueueBoard(this, queueBoard.value.masterQueues, maxQueues = maxQueues)
+        if (persistQueue && qbInit.value) {
+            // The position of a paused song is kept only in memory until it is saved here.
+            val current = withContext(Dispatchers.Main.immediate) {
+                recordCurrentSongPosition()
+                queueBoard.value.getCurrentQueue()
+            }
+            current?.let { withContext(Dispatchers.IO) { database.updateQueue(it) } }
+        }
+        val storedQueues = if (persistQueue) database.readQueue().toMutableList() else null
+        // The UI reads masterQueues, so the board is replaced on the main thread.
+        withContext(Dispatchers.Main.immediate) {
+            // Without persistence, the in-memory queues are the only copy and are carried over.
+            val queues = storedQueues ?: ArrayList(queueBoard.value.masterQueues)
+            queueBoard.value = QueueBoard(this@MusicService, queueBoard.value.masterQueues, queues, maxQueues)
         }
         if (SERVICE_DEBUG) Log.d(TAG, "Queue with $maxQueues queue limit. Persist queue = $persistQueue. Queues loaded = ${queueBoard.value.masterQueues.size}")
         qbInit.value = true
