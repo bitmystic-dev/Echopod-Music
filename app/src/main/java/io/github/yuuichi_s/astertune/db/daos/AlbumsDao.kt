@@ -23,6 +23,7 @@ import io.github.yuuichi_s.astertune.db.entities.SongAlbumMap
 import io.github.yuuichi_s.astertune.extensions.reversed
 import com.zionhuang.innertube.models.AlbumItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 /*
@@ -168,10 +169,12 @@ interface AlbumsDao : ArtistsDao {
      * Observes the album identified by [albumId] and its songs, omitting disabled local songs.
      * Uses each song's own isLocal/inLibrary rather than the album's isLocal, so a song list stays
      * correct even when the album's own local/YouTube classification does not match its songs.
+     * Songs come from [albumSongs] in album order: the relation's junction view is joined by
+     * SQLite without applying the view's ORDER BY.
      */
     fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?> =
-        _albumWithSongs(albumId).map { album ->
-            album?.copy(songs = album.songs.filter { !it.song.isLocal || it.song.inLibrary != null })
+        combine(_albumWithSongs(albumId), albumSongs(albumId)) { album, songs ->
+            album?.copy(songs = songs)
         }
 
     /**
@@ -185,6 +188,7 @@ interface AlbumsDao : ArtistsDao {
             JOIN song_album_map ON song.id = song_album_map.songId
         WHERE song_album_map.albumId = :albumId
             AND (song.isLocal = 0 OR song.inLibrary IS NOT NULL)
+        ORDER BY song_album_map.`index`
     """)
     fun albumSongs(albumId: String): Flow<List<Song>>
 
