@@ -698,47 +698,89 @@ class MusicService : MediaLibraryService(),
         updateNotification()
     }
 
+    // Main thread only. Advances when initQueue() starts or deInitQueue() runs, so that an
+    // earlier initQueue() does not apply its result.
+    private var queueInitGeneration = 0
+
     suspend fun initQueue() {
         if (SERVICE_DEBUG) Log.i(TAG, "+initQueue()")
-        val persistQueue = dataStore.get(PersistentQueueKey, true)
+        val generation = withContext(Dispatchers.Main.immediate) { ++queueInitGeneration }
         val maxQueues = dataStore.get(MaxQueuesKey, 19)
-        if (persistQueue && qbInit.value) {
-            // The position of a paused song is kept only in memory until it is saved here.
-            val current = withContext(Dispatchers.Main.immediate) {
-                recordCurrentSongPosition()
-                queueBoard.value.getCurrentQueue()
+        if (!dataStore.get(PersistentQueueKey, true)) {
+            withContext(Dispatchers.Main.immediate) {
+                if (generation == queueInitGeneration) carryOverQueues(maxQueues)
             }
-            current?.let { withContext(Dispatchers.IO) { database.updateQueue(it) } }
+            if (SERVICE_DEBUG) Log.i(TAG, "-initQueue()")
+            return
         }
-        val storedQueues = if (persistQueue) database.readQueue().toMutableList() else null
-        // The UI reads masterQueues, so the board is replaced on the main thread.
-        withContext(Dispatchers.Main.immediate) {
-            // Without persistence, the in-memory queues are the only copy and are carried over.
-            val queues = storedQueues ?: ArrayList(queueBoard.value.masterQueues)
-            queueBoard.value = QueueBoard(this@MusicService, queueBoard.value.masterQueues, queues, maxQueues)
+
+        repeat(3) { attempt ->
+            val writeCount = withContext(Dispatchers.Main.immediate) {
+                if (generation != queueInitGeneration) return@withContext null
+                if (qbInit.value) {
+                    // The position of a paused song is kept only in memory until it is saved here.
+                    recordCurrentSongPosition()
+                    queueBoard.value.saveCurrentQueue()
+                }
+                QueueBoard.writeCount
+            } ?: return
+
+            // Read the queues only after pending edits have reached the database.
+            queueBoard.value.flushDatabaseWrites()
+            val storedQueues = database.readQueue().toMutableList()
+
+            // Checking and replacing run together on the main thread, where the queues are edited.
+            val done = withContext(Dispatchers.Main.immediate) {
+                when {
+                    generation != queueInitGeneration -> true
+                    // Edits made after persistence was turned off are not in the database.
+                    !dataStore.get(PersistentQueueKey, true) -> {
+                        carryOverQueues(maxQueues)
+                        true
+                    }
+                    // Queues edited during the read are read again.
+                    QueueBoard.writeCount != writeCount -> false
+                    else -> {
+                        replaceQueueBoard(storedQueues, maxQueues)
+                        true
+                    }
+                }
+            }
+            if (done) {
+                if (SERVICE_DEBUG) Log.i(TAG, "-initQueue() attempts = ${attempt + 1}")
+                return
+            }
         }
-        if (SERVICE_DEBUG) Log.d(TAG, "Queue with $maxQueues queue limit. Persist queue = $persistQueue. Queues loaded = ${queueBoard.value.masterQueues.size}")
+        // Queues kept changing during every read; keep the queues in memory.
+        if (SERVICE_DEBUG) Log.w(TAG, "-initQueue(): queues changed during every read, keeping current queues")
+    }
+
+    // Main thread only.
+    private fun carryOverQueues(maxQueues: Int) =
+        replaceQueueBoard(ArrayList(queueBoard.value.masterQueues), maxQueues)
+
+    // Main thread only.
+    private fun replaceQueueBoard(queues: MutableList<MultiQueueObject>, maxQueues: Int) {
+        queueBoard.value = QueueBoard(this, queueBoard.value.masterQueues, queues, maxQueues)
+        recordCurrentSongPosition()
+        if (SERVICE_DEBUG) Log.d(TAG, "Queue with $maxQueues queue limit. Queues loaded = ${queueBoard.value.masterQueues.size}")
         qbInit.value = true
-        if (SERVICE_DEBUG) Log.i(TAG, "-initQueue()")
     }
 
     fun deInitQueue() {
         if (SERVICE_DEBUG) Log.i(TAG, "+deInitQueue()")
+        queueInitGeneration++
         recordCurrentSongPosition()
-        queueBoard.value.shutdown()
         // Saving before initQueue() has loaded the queues would delete every stored queue.
         if (qbInit.value && dataStore.get(PersistentQueueKey, true)) {
-            runBlocking(Dispatchers.IO) {
-                saveQueueToDisk()
+            queueBoard.value.saveAllQueues()
+            runBlocking {
+                queueBoard.value.flushDatabaseWrites()
             }
         }
         // Retain the QueueBoard and its in-memory queues while marking it uninitialized.
         qbInit.value = false
         if (SERVICE_DEBUG) Log.i(TAG, "-deInitQueue()")
-    }
-
-    suspend fun saveQueueToDisk() {
-        database.updateAllQueues(queueBoard.value.getAllQueues())
     }
 
     /**

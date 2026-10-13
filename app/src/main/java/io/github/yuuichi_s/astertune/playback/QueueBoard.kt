@@ -18,7 +18,9 @@ import androidx.compose.ui.util.fastForEachIndexed
 import androidx.media3.common.C
 import io.github.yuuichi_s.astertune.constants.PersistentQueueKey
 import io.github.yuuichi_s.astertune.constants.QUEUE_DEBUG
+import io.github.yuuichi_s.astertune.db.MusicDatabase
 import io.github.yuuichi_s.astertune.db.entities.QueueEntity
+import io.github.yuuichi_s.astertune.db.entities.QueueSongMap
 import io.github.yuuichi_s.astertune.extensions.currentMetadata
 import io.github.yuuichi_s.astertune.extensions.move
 import io.github.yuuichi_s.astertune.extensions.toMediaItem
@@ -26,17 +28,14 @@ import io.github.yuuichi_s.astertune.models.MediaMetadata
 import io.github.yuuichi_s.astertune.models.MultiQueueObject
 import io.github.yuuichi_s.astertune.utils.dataStore
 import io.github.yuuichi_s.astertune.utils.get
+import io.github.yuuichi_s.astertune.utils.reportException
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import java.util.PriorityQueue
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -105,7 +104,7 @@ class QueueBoard(
         masterIndex = masterQueues.size - 1
 
         regenerateIndexes()
-        saveAllQueues(masterQueues)
+        saveAllQueues()
     }
 
     /**
@@ -452,9 +451,7 @@ class QueueBoard(
                 masterIndex = -1
             }
 
-            CoroutineScope(Dispatchers.IO).launch {
-                player.database.deleteQueue(match.id)
-            }
+            writeToDatabase { deleteQueue(match.id) }
         } else {
             Log.w(TAG, "Cannot find queue to delete: ${item.title}")
         }
@@ -582,7 +579,7 @@ class QueueBoard(
 
         masterQueues.move(fromIndex, toIndex)
         regenerateIndexes()
-        saveAllQueues(masterQueues)
+        saveAllQueues()
     }
 
 
@@ -686,7 +683,9 @@ class QueueBoard(
         if (found) {
             val oldIndex = masterQueues.indexOf(queue)
             val q = masterQueues.removeAt(oldIndex)
-            masterQueues.add(oldIndex, q.copy(title = newName))
+            val renamed = q.copy(title = newName)
+            masterQueues.add(oldIndex, renamed)
+            saveQueue(renamed)
 
             if (QUEUE_DEBUG)
                 Log.d(TAG, "Renamed queue from \"${queue.title}\" to \"$newName\"")
@@ -819,104 +818,73 @@ class QueueBoard(
      * ========================
      */
 
-    class PriorityJob(val priority: Int, val job: Job) : Comparable<PriorityJob> {
-        override fun compareTo(other: PriorityJob): Int = this.priority - other.priority
-    }
-
-    var queueEntity = PriorityQueue<PriorityJob>()
-    var queueSongMap = PriorityQueue<PriorityJob>()
-    var jobActive = Mutex()
-    val coroutineScope = CoroutineScope(Dispatchers.IO)
+    private fun persistQueues() = player.dataStore.get(PersistentQueueKey, true)
 
     /**
-     * Drains references to eagerly launched save jobs at five-second intervals,
-     * checking song-mapping jobs before queue-entity jobs.
+     * Enqueues a database write to run after previously requested writes.
      */
-    private suspend fun databaseDispatcher() {
-        Log.d(TAG, "Starting database save task")
-        if (jobActive.isLocked) {
-            Log.d(TAG, "Database save task is already active, aborting")
-            return
-        }
-
-        jobActive.withLock {
-            while (queueEntity.isNotEmpty() || queueSongMap.isNotEmpty()) {
-                runBlocking {
-                    delay(5000L)
-                }
-                Log.d(TAG, "Running database save task")
-
-                // A song save rewrites both the queue entity and its song mappings.
-                if (!queueSongMap.isEmpty()) {
-                    queueSongMap.last().job.start()
-                    queueSongMap.clear()
-                    continue
-                }
-
-                if (!queueEntity.isEmpty()) {
-                    queueEntity.last().job.start()
-                    queueEntity.clear()
-                    continue
-                }
-            }
-        }
-        Log.d(TAG, "Exiting database save task")
+    private fun writeToDatabase(block: MusicDatabase.() -> Unit) {
+        writeCount++
+        val database = player.database
+        databaseScope.launch { database.block() }
     }
 
-    fun shutdown() {
-        queueSongMap.clear()
-        queueEntity.clear()
-    }
+    /**
+     * Waits until every write requested so far has finished.
+     */
+    suspend fun flushDatabaseWrites() = withContext(databaseWriter) {}
 
     private fun saveQueueSongs(mq: MultiQueueObject) {
-        if (player.dataStore.get(PersistentQueueKey, true)) {
-            queueSongMap.add(
-                PriorityJob(
-                    0,
-                    coroutineScope.launch(start = CoroutineStart.DEFAULT) {
-                        player.database.saveQueue(mq)
-                    }
-                )
+        if (!persistQueues()) return
+        // Copy the queue now: it keeps changing on the main thread while the write is pending.
+        val queue = mq.toQueueEntity()
+        val songs = mq.queue.toList()
+        val songMaps = songs.mapIndexed { index, song ->
+            QueueSongMap(
+                queueId = mq.id,
+                songId = song.id,
+                index = index.toLong(),
+                shuffledIndex = song.shuffleIndex.toLong()
             )
-            CoroutineScope(Dispatchers.IO).launch {
-                databaseDispatcher()
-            }
         }
+        writeToDatabase { saveQueue(queue, songs, songMaps) }
     }
 
     private fun saveQueue(mq: MultiQueueObject) {
-        if (player.dataStore.get(PersistentQueueKey, true)) {
-            queueEntity.add(
-                PriorityJob(
-                    0,
-                    coroutineScope.launch(start = CoroutineStart.DEFAULT) {
-                        player.database.updateQueue(mq)
-                    }
-                )
-            )
-            CoroutineScope(Dispatchers.IO).launch {
-                databaseDispatcher()
-            }
-        }
+        if (!persistQueues()) return
+        val queue = mq.toQueueEntity()
+        writeToDatabase { update(queue) }
     }
 
-    private fun saveAllQueues(mq: MutableList<MultiQueueObject>) {
-        if (player.dataStore.get(PersistentQueueKey, true)) {
-            queueEntity.add(
-                PriorityJob(
-                    -1,
-                    coroutineScope.launch(start = CoroutineStart.DEFAULT) {
-                        player.database.updateAllQueues(mq)
-                    }
-                )
-            )
-            CoroutineScope(Dispatchers.IO).launch {
-                databaseDispatcher()
-            }
-        }
+    /**
+     * Enqueues a metadata update for the current queue when persistence is enabled.
+     */
+    fun saveCurrentQueue() {
+        getCurrentQueue()?.let { saveQueue(it) }
+    }
+
+    /**
+     * Enqueues metadata updates for all open queues and deletion of other stored queues
+     * when persistence is enabled.
+     */
+    fun saveAllQueues() {
+        if (!persistQueues()) return
+        val queues = masterQueues.mapIndexed { index, q -> q.toQueueEntity().copy(index = index) }
+        writeToDatabase { updateAllQueues(queues) }
     }
 
     companion object {
+        /**
+         * Number of database writes requested so far. Main thread only.
+         */
+        var writeCount = 0L
+            private set
+
+        // Queue writes run sequentially across QueueBoard instances.
+        private val databaseWriter = Dispatchers.IO.limitedParallelism(1)
+        private val databaseScope = CoroutineScope(
+            SupervisorJob() + databaseWriter + CoroutineExceptionHandler { _, e -> reportException(e) }
+        )
 
         fun shuffleInPlace(list: List<MediaMetadata>) {
             val rng = (0..(list.size - 1)).shuffled()

@@ -12,11 +12,8 @@ import io.github.yuuichi_s.astertune.db.entities.QueueSong
 import io.github.yuuichi_s.astertune.db.entities.QueueSongMap
 import io.github.yuuichi_s.astertune.models.MultiQueueObject
 import io.github.yuuichi_s.astertune.models.toMediaMetadata
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 @Dao
 interface QueueDao {
@@ -93,29 +90,13 @@ interface QueueDao {
     @Update
     fun update(queue: QueueEntity)
 
+    /**
+     * Updates the given queues and deletes every other queue.
+     */
     @Transaction
-    fun updateQueue(mq: MultiQueueObject) {
-        update(
-            QueueEntity(
-                id = mq.id,
-                title = mq.title,
-                shuffled = mq.shuffled,
-                queuePos = mq.queuePos,
-                lastSongPos = mq.lastSongPos,
-                index = mq.index,
-                playlistId = mq.playlistId
-            )
-        )
-    }
-
-    @Transaction
-    fun updateAllQueues(mqs: List<MultiQueueObject>) {
-        val mqs = mqs.toList() // please no more ConcurrentModificationException I beg you
-        mqs.forEachIndexed { index, q -> q.index = index }
-        CoroutineScope(Dispatchers.IO).launch {
-            nukeAliens(mqs.map { it.id })
-            mqs.forEach { updateQueue(it) }
-        }
+    fun updateAllQueues(queues: List<QueueEntity>) {
+        nukeAliens(queues.map { it.id })
+        queues.forEach { update(it) }
     }
 
     // endregion
