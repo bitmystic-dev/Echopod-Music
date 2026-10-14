@@ -26,13 +26,15 @@ interface QueueDao {
     @Query("SELECT song.*, queue_song_map.shuffledIndex from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId ORDER BY `index`")
     fun getQueueSongs(queueId: Long): Flow<List<QueueSong>>
 
-    suspend fun readQueue(): List<MultiQueueObject> {
+    /** Last [maxQueues] non-empty stored queues, in queue order. */
+    suspend fun readQueue(maxQueues: Int = Int.MAX_VALUE): List<MultiQueueObject> {
         val resultQueues = ArrayList<MultiQueueObject>()
         val queues = getAllQueues().first()
 
-        queues.forEach { queue ->
+        for (queue in queues.asReversed()) {
+            if (resultQueues.size >= maxQueues) break
             val shuffledSongs = getQueueSongs(queue.id).first()
-            if (shuffledSongs.isEmpty()) return@forEach
+            if (shuffledSongs.isEmpty()) continue
             resultQueues.add(
                 MultiQueueObject(
                     id = queue.id,
@@ -51,6 +53,7 @@ interface QueueDao {
             )
         }
 
+        resultQueues.reverse()
         return resultQueues
     }
 
@@ -91,11 +94,13 @@ interface QueueDao {
     fun update(queue: QueueEntity)
 
     /**
-     * Updates the given queues and deletes every other queue.
+     * Updates the supplied queues and deletes others.
+     * [keepOtherQueues] retains other queues with songs.
      */
     @Transaction
-    fun updateAllQueues(queues: List<QueueEntity>) {
-        nukeAliens(queues.map { it.id })
+    fun updateAllQueues(queues: List<QueueEntity>, keepOtherQueues: Boolean) {
+        val ids = queues.map { it.id }
+        if (keepOtherQueues) deleteEmptyQueuesExcept(ids) else deleteQueuesExcept(ids)
         queues.forEach { update(it) }
     }
 
@@ -114,7 +119,10 @@ interface QueueDao {
     @Query("DELETE FROM queue WHERE id = :id")
     fun deleteQueue(id: Long)
 
+    @Query("DELETE FROM queue WHERE id NOT IN (:ids) AND id NOT IN (SELECT queueId FROM queue_song_map)")
+    fun deleteEmptyQueuesExcept(ids: List<Long>)
+
     @Query("DELETE FROM queue WHERE id NOT IN (:ids)")
-    fun nukeAliens(ids: List<Long>)
+    fun deleteQueuesExcept(ids: List<Long>)
     // endregion
 }

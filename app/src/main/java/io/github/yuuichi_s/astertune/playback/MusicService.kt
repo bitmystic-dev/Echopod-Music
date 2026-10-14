@@ -95,6 +95,7 @@ import io.github.yuuichi_s.astertune.constants.MediaSessionConstants.CommandTogg
 import io.github.yuuichi_s.astertune.constants.PauseListenHistoryKey
 import io.github.yuuichi_s.astertune.constants.PauseRemoteListenHistoryKey
 import io.github.yuuichi_s.astertune.constants.PersistentQueueKey
+import io.github.yuuichi_s.astertune.constants.PlayerDismissedKey
 import io.github.yuuichi_s.astertune.constants.PlayerVolumeKey
 import io.github.yuuichi_s.astertune.constants.RepeatModeKey
 import io.github.yuuichi_s.astertune.constants.SERVICE_DEBUG
@@ -145,6 +146,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -403,6 +405,8 @@ class MusicService : MediaLibraryService(),
                 }
         )
 
+        queueDismissed = dataStore.get(PlayerDismissedKey, false)
+
         // lateinit tasks
         offloadScope.launch {
             if (SERVICE_DEBUG) Log.i(TAG, "Launching MusicService offloadScope tasks")
@@ -592,10 +596,15 @@ class MusicService : MediaLibraryService(),
         queuePlaylistId = queue.playlistId
         var q: MultiQueueObject? = null
         val preloadItem = queue.preloadItem
-        queueLoadScope.launch {
+        val dismissCountAtRequest = dismissCount
+        queueLoadJob = queueLoadScope.launch {
             if (SERVICE_DEBUG) Log.d(TAG, "playQueue: Resolving additional queue data...")
+            fun dismissedSinceRequest() = dismissCount != dismissCountAtRequest
             try {
                 if (preloadItem != null) {
+                    if (dismissedSinceRequest()) {
+                        return@launch
+                    }
                     q = queueBoard.value.addQueue(
                         queueTitle ?: "Radio\u2060temp",
                         listOf(preloadItem),
@@ -607,6 +616,8 @@ class MusicService : MediaLibraryService(),
                 }
 
                 val initialStatus = withContext(Dispatchers.IO) { queue.getInitialStatus() }
+                // Rebind after a possible board replacement
+                q = q?.let { added -> queueBoard.value.masterQueues.firstOrNull { it.id == added.id } }
                 // do not find a title if an override is provided
                 if ((title == null) && initialStatus.title != null) {
                     queueTitle = initialStatus.title
@@ -615,6 +626,8 @@ class MusicService : MediaLibraryService(),
                         queueBoard.value.renameQueue(q!!, queueTitle)
                     }
                 }
+
+                if (dismissedSinceRequest() && q == null) return@launch
 
                 val items = ArrayList<MediaMetadata>()
                 if (SERVICE_DEBUG) Log.d(TAG, "playQueue: Queue initial status item count: ${initialStatus.items.size}")
@@ -633,11 +646,18 @@ class MusicService : MediaLibraryService(),
                         replace = replace || preloadItem != null,
                         continuationEndpoint = if (isRadio) items.takeLast(4).shuffled().first().id else null // yq?.getContinuationEndpoint()
                     )
-                    queueBoard.value.setCurrQueue(q, shouldResume)
+                    // After dismissal, reload only if this queue was selected again
+                    if (!dismissedSinceRequest() ||
+                        (!queueDismissed && queueBoard.value.getCurrentQueue()?.id == q?.id)
+                    ) {
+                        queueBoard.value.setCurrQueue(q, shouldResume)
+                    }
                 }
 
-                player.prepare()
-                player.playWhenReady = playWhenReady
+                if (!dismissedSinceRequest()) {
+                    player.prepare()
+                    player.playWhenReady = playWhenReady
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -656,6 +676,10 @@ class MusicService : MediaLibraryService(),
     fun enqueueNext(items: List<MediaItem>) {
         scope.launch {
             if (!qbInit.value) {
+                // Wait before starting the new queue
+                if (!qbInit.value) {
+                    queueLoadJob?.join()
+                }
 
                 // when enqueuing next when player isn't active, play as a new song
                 if (items.isNotEmpty()) {
@@ -702,6 +726,23 @@ class MusicService : MediaLibraryService(),
     // earlier initQueue() does not apply its result.
     private var queueInitGeneration = 0
 
+    // Main thread only.
+    private var queueDismissed = false
+
+    // Latest playQueue job
+    @Volatile
+    private var queueLoadJob: Job? = null
+
+    // deInitQueue() call count.
+    // Written on the main thread. Read by playQueue() from any thread.
+    @Volatile
+    private var dismissCount = 0
+
+    /**
+     * Reloads the queue list up to the configured limit without loading it into the player.
+     * Uses stored queues when persistence is enabled, otherwise in-memory queues.
+     * A dismissed player stays hidden unless its playlist matches an open queue.
+     */
     suspend fun initQueue() {
         if (SERVICE_DEBUG) Log.i(TAG, "+initQueue()")
         val generation = withContext(Dispatchers.Main.immediate) { ++queueInitGeneration }
@@ -727,7 +768,7 @@ class MusicService : MediaLibraryService(),
 
             // Read the queues only after pending edits have reached the database.
             queueBoard.value.flushDatabaseWrites()
-            val storedQueues = database.readQueue().toMutableList()
+            val storedQueues = database.readQueue(maxQueues).toMutableList()
 
             // Checking and replacing run together on the main thread, where the queues are edited.
             val done = withContext(Dispatchers.Main.immediate) {
@@ -741,7 +782,13 @@ class MusicService : MediaLibraryService(),
                     // Queues edited during the read are read again.
                     QueueBoard.writeCount != writeCount -> false
                     else -> {
-                        replaceQueueBoard(storedQueues, maxQueues)
+                        // Keep open queues after stored queues outside the limit.
+                        replaceQueueBoard(
+                            storedQueues,
+                            maxQueues,
+                            storedQueuesLoaded = true,
+                            minFirstQueueIndex = storedQueues.firstOrNull()?.index ?: 0,
+                        )
                         true
                     }
                 }
@@ -756,30 +803,83 @@ class MusicService : MediaLibraryService(),
     }
 
     // Main thread only.
-    private fun carryOverQueues(maxQueues: Int) =
-        replaceQueueBoard(ArrayList(queueBoard.value.masterQueues), maxQueues)
+    private fun carryOverQueues(maxQueues: Int) = replaceQueueBoard(
+        ArrayList(queueBoard.value.masterQueues),
+        maxQueues,
+        queueBoard.value.storedQueuesLoaded,
+        queueBoard.value.firstQueueIndex,
+    )
 
     // Main thread only.
-    private fun replaceQueueBoard(queues: MutableList<MultiQueueObject>, maxQueues: Int) {
-        queueBoard.value = QueueBoard(this, queueBoard.value.masterQueues, queues, maxQueues)
+    private fun replaceQueueBoard(
+        queues: MutableList<MultiQueueObject>,
+        maxQueues: Int,
+        storedQueuesLoaded: Boolean,
+        minFirstQueueIndex: Int = 0,
+    ) {
+        queueBoard.value = QueueBoard(
+            this, queueBoard.value.masterQueues, queues, maxQueues, minFirstQueueIndex, storedQueuesLoaded
+        )
+        val playerHoldsOpenQueue = queueDismissed && queueBoard.value.selectQueueInPlayer()
         recordCurrentSongPosition()
         if (SERVICE_DEBUG) Log.d(TAG, "Queue with $maxQueues queue limit. Queues loaded = ${queueBoard.value.masterQueues.size}")
+        if (queueDismissed) {
+            if (!playerHoldsOpenQueue) return
+            setQueueDismissed(false)
+        }
         qbInit.value = true
     }
 
+    /**
+     * Clears the player's dismissed state.
+     * Main thread only.
+     */
+    fun onQueueLoaded() {
+        if (!queueDismissed) return
+        setQueueDismissed(false)
+        qbInit.value = true
+    }
+
+    /**
+     * Marks queues uninitialized and saves the player's dismissed state.
+     * The caller clears the player.
+     * Main thread only.
+     */
+    fun dismissQueue() {
+        deInitQueue()
+        setQueueDismissed(true)
+    }
+
+    // Main thread only.
+    private fun setQueueDismissed(dismissed: Boolean) {
+        queueDismissed = dismissed
+        runBlocking(Dispatchers.IO) {
+            dataStore.edit { it[PlayerDismissedKey] = dismissed }
+        }
+    }
+
+    /**
+     * Saves open queue metadata when initialized and persistence is enabled,
+     * then marks the queues uninitialized.
+     * Retains in-memory queues and the player's playlist. Must be called on the main thread.
+     *
+     * Use [dismissQueue] to persist a user dismissal.
+     */
     fun deInitQueue() {
         if (SERVICE_DEBUG) Log.i(TAG, "+deInitQueue()")
         queueInitGeneration++
+        dismissCount++
+        queueLoadJob = null
         recordCurrentSongPosition()
-        // Saving before initQueue() has loaded the queues would delete every stored queue.
+        // An uninitialized board may not contain the stored queues, so do not save it.
         if (qbInit.value && dataStore.get(PersistentQueueKey, true)) {
             queueBoard.value.saveAllQueues()
             runBlocking {
                 queueBoard.value.flushDatabaseWrites()
             }
         }
-        // Retain the QueueBoard and its in-memory queues while marking it uninitialized.
         qbInit.value = false
+        queueDismissed = true
         if (SERVICE_DEBUG) Log.i(TAG, "-deInitQueue()")
     }
 
@@ -1254,6 +1354,13 @@ class MusicService : MediaLibraryService(),
         }
 
         updateLyricsFetchTargets()
+        // End the dismissed state only when the player's playlist matches an open queue.
+        if (queueDismissed && mediaItem != null) {
+            val playerHoldsOpenQueue = queueBoard.value.selectQueueInPlayer()
+            if (playerHoldsOpenQueue) {
+                onQueueLoaded()
+            }
+        }
         // A song that got playing again starts with a full budget next time it comes round.
         mediaItem?.mediaId?.let { streamRefreshes.remove(it) }
 
@@ -1277,16 +1384,22 @@ class MusicService : MediaLibraryService(),
                 val continuation = null // playlistId.substringAfter("\n")
                 val yq = YouTubeQueue(WatchEndpoint(endpoint, continuation))
                 val mediaItems = yq.nextPage()
-                q.playlistId = mediaItems.takeLast(4).shuffled().first().id // yq.getContinuationEndpoint()
                 if (SERVICE_DEBUG) Log.d(TAG, "onMediaItemTransition: Got ${mediaItems.size} songs from radio")
+                // Appending songs reloads the player, so discard results
+                // if the player was dismissed or a different queue is now current.
+                val current = queueBoard.value.getCurrentQueue()
+                if (queueDismissed || current == null || current.id != q.id) {
+                    return@launch
+                }
+                current.playlistId = mediaItems.takeLast(4).shuffled().first().id // yq.getContinuationEndpoint()
                 if (player.playbackState != STATE_IDLE && songCount > 1) { // initial radio loading is handled by playQueue()
                     queueBoard.value.enqueueEnd(mediaItems.drop(1))
                 }
             }
         }
 
-        // A null item means the player was emptied; the queue keeps its selected song.
-        if (mediaItem != null) {
+        // Keep the queue's selected song when the player is cleared or remains dismissed.
+        if (mediaItem != null && !queueDismissed) {
             queueBoard.value.setCurrQueuePosIndex(player.currentMediaItemIndex)
         }
 
@@ -1299,6 +1412,7 @@ class MusicService : MediaLibraryService(),
             scope.launch(SilentHandler) {
                 // Defer reshuffling for 200 ms after the media-item transition callback.
                 delay(200)
+                if (queueDismissed) return@launch
                 queueBoard.value.shuffleCurrent(player.mediaItemCount > 2)
                 queueBoard.value.setCurrQueue()
             }

@@ -48,20 +48,31 @@ class QueueBoard(
     private val player: MusicService,
     val masterQueues: SnapshotStateList<MultiQueueObject> = mutableStateListOf(),
     queues: MutableList<MultiQueueObject> = ArrayList(),
-    private var maxQueues: Int
+    private var maxQueues: Int,
+    minFirstQueueIndex: Int = 0,
+    storedQueuesLoaded: Boolean = false,
 ) {
     private val TAG = QueueBoard::class.simpleName.toString()
 
+    // Whether saves retain other non-empty stored queues.
+    var storedQueuesLoaded = storedQueuesLoaded
+        private set
+
     private var masterIndex: Int // current queue index
     var detachedHead = false
+
+    // Base index for renumbering and saving queues.
+    val firstQueueIndex: Int
 
     init {
         masterQueues.clear()
         if (maxQueues < 0) {
             maxQueues = 1
         }
+        val firstOpen = (queues.size - maxQueues).coerceAtLeast(0)
+        firstQueueIndex = maxOf(minFirstQueueIndex, queues.subList(0, firstOpen).maxOfOrNull { it.index + 1 } ?: 0)
         if (!queues.isEmpty()) {
-            masterQueues.addAll(queues.subList((queues.size - maxQueues).coerceAtLeast(0), queues.size))
+            masterQueues.addAll(queues.subList(firstOpen, queues.size))
         }
         masterIndex = masterQueues.size - 1
     }
@@ -77,7 +88,7 @@ class QueueBoard(
      * Regenerate indexes of queues to reflect their position
      */
     private fun regenerateIndexes() {
-        masterQueues.fastForEachIndexed { index, q -> q.index = index }
+        masterQueues.fastForEachIndexed { index, q -> q.index = firstQueueIndex + index }
     }
 
     /**
@@ -288,7 +299,7 @@ class QueueBoard(
                 false,
                 startIndex,
                 -1,
-                masterQueues.size,
+                maxOf(firstQueueIndex, (masterQueues.maxOfOrNull { it.index } ?: -1) + 1),
                 continuationEndpoint
             )
             masterQueues.add(newQueue)
@@ -435,18 +446,19 @@ class QueueBoard(
     /**
      * Deletes a queue
      *
-     * @param item Queue identifying the target by title
+     * @param item Queue identifying the target by ID
      * @return Number of remaining queues
      */
     fun deleteQueue(item: MultiQueueObject): Int {
         if (QUEUE_DEBUG)
             Log.d(TAG, "DELETING QUEUE ${item.title}")
 
-        val match = masterQueues.firstOrNull { it.title == item.title }
+        val matchIndex = masterQueues.indexOfFirst { it.id == item.id }
+        val match = masterQueues.getOrNull(matchIndex)
         if (match != null) {
-            masterQueues.remove(match)
+            masterQueues.removeAt(matchIndex)
             if (masterQueues.isNotEmpty()) {
-                masterIndex -= 1
+                if (matchIndex <= masterIndex) masterIndex -= 1
             } else {
                 masterIndex = -1
             }
@@ -665,10 +677,25 @@ class QueueBoard(
     fun getMasterIndex() = masterIndex
 
     /**
-     * Retrieve the current queue
+     * Selects an open queue matching all player song IDs in playback order.
+     * Prefers the current queue. A changed selection moves the queue to the end.
+     * Saves the order when persistence is enabled. Leaves the player's playlist unchanged.
+     * Main thread only.
      *
-     * @return Current queue, or null if the current queue index is invalid
+     * @return Whether a matching queue was found
      */
+    fun selectQueueInPlayer(): Boolean {
+        val playerIds = List(player.player.mediaItemCount) { player.player.getMediaItemAt(it).mediaId }
+        if (playerIds.isEmpty()) return false
+        fun inPlayer(q: MultiQueueObject) = q.getCurrentQueueShuffled().map { it.id } == playerIds
+        if (getCurrentQueue()?.let { inPlayer(it) } == true) return true
+        val index = masterQueues.indexOfLast { inPlayer(it) }
+        if (index < 0) return false
+        bubbleUp(index)
+        return true
+    }
+
+    /** Returns the current queue, or null if its index is invalid. */
     fun getCurrentQueue(): MultiQueueObject? {
         try {
             return masterQueues[masterIndex]
@@ -791,6 +818,7 @@ class QueueBoard(
         if (player.player.shuffleModeEnabled != item.shuffled) {
             player.player.shuffleModeEnabled = item.shuffled
         }
+        player.onQueueLoaded()
         return queuePos
     }
 
@@ -864,13 +892,15 @@ class QueueBoard(
     }
 
     /**
-     * Enqueues metadata updates for all open queues and deletion of other stored queues
-     * when persistence is enabled.
+     * Queues metadata updates for all open queues when persistence is enabled.
+     * Deletes other stored queues, except non-empty queues when [storedQueuesLoaded] is true.
      */
     fun saveAllQueues() {
         if (!persistQueues()) return
-        val queues = masterQueues.mapIndexed { index, q -> q.toQueueEntity().copy(index = index) }
-        writeToDatabase { updateAllQueues(queues) }
+        val queues = masterQueues.mapIndexed { index, q -> q.toQueueEntity().copy(index = firstQueueIndex + index) }
+        val keepOtherQueues = storedQueuesLoaded
+        writeToDatabase { updateAllQueues(queues, keepOtherQueues) }
+        storedQueuesLoaded = true
     }
 
     companion object {
