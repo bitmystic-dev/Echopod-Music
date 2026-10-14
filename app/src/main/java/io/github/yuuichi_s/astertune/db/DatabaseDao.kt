@@ -35,7 +35,6 @@ import io.github.yuuichi_s.astertune.db.entities.SongEntity
 import io.github.yuuichi_s.astertune.db.entities.SongGenreMap
 import io.github.yuuichi_s.astertune.extensions.toSQLiteQuery
 import io.github.yuuichi_s.astertune.models.MediaMetadata
-import io.github.yuuichi_s.astertune.models.MultiQueueObject
 import io.github.yuuichi_s.astertune.models.toMediaMetadata
 import com.zionhuang.innertube.models.AlbumItem
 import com.zionhuang.innertube.models.ArtistItem
@@ -370,43 +369,20 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
 
 
     /**
-     * WARNING: This removes all queue song data and re-adds the queue. Did you mean to use updateQueue()?
+     * Replaces [queue] and its stored song mappings. Does nothing if [songs] is empty.
+     *
+     * Use [QueueDao.update] to update queue metadata without replacing its song mappings.
      */
     @Transaction
-    fun saveQueue(mq: MultiQueueObject) {
-        if (mq.queue.isEmpty()) {
+    fun saveQueue(queue: QueueEntity, songs: List<MediaMetadata>, songMaps: List<QueueSongMap>) {
+        if (songs.isEmpty()) {
             return
         }
 
-        insert(
-            QueueEntity(
-                id = mq.id,
-                title = mq.title,
-                shuffled = mq.shuffled,
-                queuePos = mq.queuePos,
-                lastSongPos = mq.lastSongPos,
-                index = mq.index,
-                playlistId = mq.playlistId
-            )
-        )
-
-        deleteAllQueueSongs(mq.id)
-        // insert songs
-
-        // why does kotlin not have for i loop???
-        var i = 0
-        while (i < mq.getSize()) {
-            insert(mq.queue[i]) // make sure song exists
-            insert(
-                QueueSongMap(
-                    queueId = mq.id,
-                    songId = mq.queue[i].id,
-                    index = i.toLong(),
-                    shuffledIndex = mq.queue[i].shuffleIndex.toLong()
-                )
-            )
-            i ++
-        }
+        insert(queue)
+        deleteAllQueueSongs(queue.id)
+        songs.forEach { insert(it) }
+        songMaps.forEach { insert(it) }
     }
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)

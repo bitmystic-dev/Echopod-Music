@@ -4,6 +4,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastSumBy
 import androidx.media3.common.C
+import io.github.yuuichi_s.astertune.db.entities.QueueEntity
 
 /**
  * @param title Queue title (and UID)
@@ -121,4 +122,14 @@ data class MultiQueueObject(
         queue.clear()
         queue.addAll(mediaList)
     }
+
+    fun toQueueEntity() = QueueEntity(
+        id = id,
+        title = title,
+        shuffled = shuffled,
+        queuePos = queuePos,
+        lastSongPos = lastSongPos,
+        index = index,
+        playlistId = playlistId
+    )
 }

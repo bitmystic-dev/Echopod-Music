@@ -62,6 +62,7 @@ val AudioGaplessOffloadKey = booleanPreferencesKey("enableGaplessOffload")
 
 val MaxQueuesKey = intPreferencesKey("maxQueues")
 val PersistentQueueKey = booleanPreferencesKey("persistentQueue")
+val PlayerDismissedKey = booleanPreferencesKey("playerDismissed") // Player hidden until a queue is loaded
 
 val SeekIncrementKey = stringPreferencesKey("seekIncrement")
 val SkipSilenceKey = booleanPreferencesKey("skipSilence")

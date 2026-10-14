@@ -12,11 +12,8 @@ import io.github.yuuichi_s.astertune.db.entities.QueueSong
 import io.github.yuuichi_s.astertune.db.entities.QueueSongMap
 import io.github.yuuichi_s.astertune.models.MultiQueueObject
 import io.github.yuuichi_s.astertune.models.toMediaMetadata
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 @Dao
 interface QueueDao {
@@ -29,13 +26,15 @@ interface QueueDao {
     @Query("SELECT song.*, queue_song_map.shuffledIndex from queue_song_map JOIN song ON queue_song_map.songId = song.id WHERE queueId = :queueId ORDER BY `index`")
     fun getQueueSongs(queueId: Long): Flow<List<QueueSong>>
 
-    suspend fun readQueue(): List<MultiQueueObject> {
+    /** Last [maxQueues] non-empty stored queues, in queue order. */
+    suspend fun readQueue(maxQueues: Int = Int.MAX_VALUE): List<MultiQueueObject> {
         val resultQueues = ArrayList<MultiQueueObject>()
         val queues = getAllQueues().first()
 
-        queues.forEach { queue ->
+        for (queue in queues.asReversed()) {
+            if (resultQueues.size >= maxQueues) break
             val shuffledSongs = getQueueSongs(queue.id).first()
-            if (shuffledSongs.isEmpty()) return@forEach
+            if (shuffledSongs.isEmpty()) continue
             resultQueues.add(
                 MultiQueueObject(
                     id = queue.id,
@@ -54,6 +53,7 @@ interface QueueDao {
             )
         }
 
+        resultQueues.reverse()
         return resultQueues
     }
 
@@ -93,29 +93,15 @@ interface QueueDao {
     @Update
     fun update(queue: QueueEntity)
 
+    /**
+     * Updates the supplied queues and deletes others.
+     * [keepOtherQueues] retains other queues with songs.
+     */
     @Transaction
-    fun updateQueue(mq: MultiQueueObject) {
-        update(
-            QueueEntity(
-                id = mq.id,
-                title = mq.title,
-                shuffled = mq.shuffled,
-                queuePos = mq.queuePos,
-                lastSongPos = mq.lastSongPos,
-                index = mq.index,
-                playlistId = mq.playlistId
-            )
-        )
-    }
-
-    @Transaction
-    fun updateAllQueues(mqs: List<MultiQueueObject>) {
-        val mqs = mqs.toList() // please no more ConcurrentModificationException I beg you
-        mqs.forEachIndexed { index, q -> q.index = index }
-        CoroutineScope(Dispatchers.IO).launch {
-            nukeAliens(mqs.map { it.id })
-            mqs.forEach { updateQueue(it) }
-        }
+    fun updateAllQueues(queues: List<QueueEntity>, keepOtherQueues: Boolean) {
+        val ids = queues.map { it.id }
+        if (keepOtherQueues) deleteEmptyQueuesExcept(ids) else deleteQueuesExcept(ids)
+        queues.forEach { update(it) }
     }
 
     // endregion
@@ -133,7 +119,10 @@ interface QueueDao {
     @Query("DELETE FROM queue WHERE id = :id")
     fun deleteQueue(id: Long)
 
+    @Query("DELETE FROM queue WHERE id NOT IN (:ids) AND id NOT IN (SELECT queueId FROM queue_song_map)")
+    fun deleteEmptyQueuesExcept(ids: List<Long>)
+
     @Query("DELETE FROM queue WHERE id NOT IN (:ids)")
-    fun nukeAliens(ids: List<Long>)
+    fun deleteQueuesExcept(ids: List<Long>)
     // endregion
 }
