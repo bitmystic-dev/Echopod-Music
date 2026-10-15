@@ -32,7 +32,7 @@ OuterTuneのデータを移行する場合は[OuterTuneからの移行](#outertu
     - 楽曲のダウンロード（オフライン再生）
 
 - ローカル音楽ファイル再生
-    - 端末内の音声ファイル（MP3、OGG、FLAC等）の再生
+    - 端末内の音声ファイル（MP3、OGG、FLAC、ALAC等）の再生
     - タグの読み取りにMediaStoreではなく独自の抽出処理を使用し、複数値タグや特殊なタグも正しく読み取り
     - ローカルの曲とYouTube Musicの曲を同じキューで再生
     - Android Auto 対応
@@ -89,10 +89,12 @@ OuterTuneのデータを移行する場合は[OuterTuneからの移行](#outertu
 - ローカル楽曲のタグ読み取り、リンク処理、ギャップレス再生を改善
 - アルバム画面に表示される楽曲数の誤りを修正
 - 端末内の楽曲・アルバム・アーティスト・プレイリストを、絞り込みと検索で閲覧できる「ローカル」タブを追加
+- ローカル楽曲に、曲ごとの音量差をそろえるオーディオの正規化を追加（再生時に音量を測定。初期設定はオフ）
 
 ### 表示・設定
 
 - タブレット向けUIを改善
+- LineageOS を導入した Echo Show 5 など、横長の画面を持つ小型端末に対応。ナビゲーションバーを画面の左端に移し、プレイヤーを横向きのレイアウトで表示
 - Android 14 以降ではシステムのコントラスト設定を自動検出
 - カスタムアクセントカラーを追加
 - 「オーディオフォーカスを維持」するプレイヤー設定を追加
@@ -116,6 +118,13 @@ OuterTuneのデータを移行する場合は[OuterTuneからの移行](#outertu
 |---|---|---|---|
 | <img src="assets/gallery/homepage.png" height="480" /> | <img src="assets/gallery/player.png" height="480" /> | <img src="assets/gallery/lyrics.png" height="480" /> |  <img src="assets/gallery/queue_expanded.png" height="480" /> |
 | ホーム | プレイヤー | 歌詞 | キュー |
+
+### 横画面
+
+| | |
+|---|---|
+| <img src="assets/gallery/landscape_home.png" height="240" /> | <img src="assets/gallery/landscape_player.png" height="240" /> |
+| ホーム | プレイヤー |
 
 ### タブレット
 

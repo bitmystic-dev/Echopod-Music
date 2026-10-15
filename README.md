@@ -32,7 +32,7 @@ To transfer your data from OuterTune, see [Migrating from OuterTune to AsterTune
     - Song downloads for offline playback
 
 - Local music playback
-    - Playback of audio files stored on your device, including MP3, OGG, and FLAC
+    - Playback of audio files stored on your device, including MP3, OGG, FLAC, and ALAC
     - A custom metadata extraction process instead of MediaStore, allowing multi-value and specialized tags to be read correctly
     - Local and YouTube Music songs in the same queue
     - Android Auto support
@@ -89,10 +89,12 @@ You can transfer your data using the app's built-in backup feature.
 - Improved metadata reading, link handling, and gapless playback for local songs
 - Fixed an incorrect song count on album screens
 - Added a Local tab for browsing on-device songs, albums, artists, and playlists with filtering and search
+- Added audio normalization for local songs, which evens out volume between songs based on loudness measured during playback (off by default)
 
 ### Display and Settings
 
 - Improved the tablet UI
+- Added support for small devices with a landscape screen, such as an Echo Show 5 running LineageOS, by moving the navigation bar to the left edge of the screen and showing the player in the landscape layout
 - Automatically detects the system contrast setting on Android 14 and later
 - Added custom accent colors
 - Added a player setting to keep audio focus
@@ -116,6 +118,13 @@ You can transfer your data using the app's built-in backup feature.
 |---|---|---|---|
 | <img src="assets/gallery/homepage.png" height="480" /> | <img src="assets/gallery/player.png" height="480" /> | <img src="assets/gallery/lyrics.png" height="480" /> | <img src="assets/gallery/queue_expanded.png" height="480" /> |
 | Home | Player | Lyrics | Queue |
+
+### Landscape
+
+| | |
+|---|---|
+| <img src="assets/gallery/landscape_home.png" height="240" /> | <img src="assets/gallery/landscape_player.png" height="240" /> |
+| Home | Player |
 
 ### Tablet
 
