@@ -45,7 +45,7 @@
     <string name="tap_show_more">點擊以展開更多信息</string>
     <string name="library_filter">媒體庫篩選</string>
     <string name="sort_by_track_number">歌曲順序</string>
-    <string name="playlist_add_local_to_synced_note">請注意：應用不支持增加本地音訊到同步或遠端的音樂清單。</string>
+    <string name="playlist_add_local_to_synced_note">請注意：應用不支持增加本地音訊到同步或遠端的音樂清單。其他所有組合皆有效。</string>
     <string name="playlist_missing_note">沒有你要的播放清單？按此以在設定開啟遠端讀寫模式</string>
     <string name="toggle_lyrics">開關歌詞</string>
     <string name="prefs_advanced">進階設定</string>
