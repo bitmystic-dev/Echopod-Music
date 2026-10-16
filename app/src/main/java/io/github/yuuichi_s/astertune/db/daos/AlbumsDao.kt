@@ -16,6 +16,7 @@ import io.github.yuuichi_s.astertune.constants.AlbumSortType
 import io.github.yuuichi_s.astertune.db.entities.Album
 import io.github.yuuichi_s.astertune.db.entities.AlbumArtistMap
 import io.github.yuuichi_s.astertune.db.entities.AlbumEntity
+import io.github.yuuichi_s.astertune.db.entities.AlbumThumbnail
 import io.github.yuuichi_s.astertune.db.entities.AlbumWithSongs
 import io.github.yuuichi_s.astertune.db.entities.ArtistEntity
 import io.github.yuuichi_s.astertune.db.entities.Song
@@ -227,6 +228,46 @@ interface AlbumsDao : ArtistsDao {
         GROUP BY album.id
     """)
     fun artistAlbums(artistId: String): Flow<List<Album>>
+
+    /** Albums containing the artist's library songs. */
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM song_artist_map
+            JOIN song ON song_artist_map.songId = song.id
+            JOIN song_album_map ON song_album_map.songId = song.id
+            JOIN album ON song_album_map.albumId = album.id
+        WHERE song_artist_map.artistId = :artistId
+            AND song.inLibrary IS NOT NULL
+        GROUP BY album.id
+    """)
+    fun artistSongAlbums(artistId: String): Flow<List<Album>>
+
+    /**
+     * Artwork for each album of [artistSongAlbums] that can still be shown: non-local artwork as is,
+     * a local album's artwork while its file is a library song, otherwise a library song of the album.
+     */
+    @Query("""
+        SELECT album.id AS albumId,
+               COALESCE(
+                   CASE WHEN album.thumbnailUrl NOT LIKE '/%' THEN album.thumbnailUrl END,
+                   (SELECT s.localPath FROM song s
+                    WHERE s.localPath = album.thumbnailUrl AND s.inLibrary IS NOT NULL
+                    LIMIT 1),
+                   (SELECT MIN(s.localPath) FROM song_album_map m JOIN song s ON s.id = m.songId
+                    WHERE m.albumId = album.id AND s.inLibrary IS NOT NULL AND s.localPath IS NOT NULL)
+               ) AS thumbnailUrl
+        FROM album
+        WHERE album.id IN (
+            SELECT song_album_map.albumId
+            FROM song_artist_map
+                JOIN song ON song_artist_map.songId = song.id
+                JOIN song_album_map ON song_album_map.songId = song.id
+            WHERE song_artist_map.artistId = :artistId
+                AND song.inLibrary IS NOT NULL
+        )
+    """)
+    fun artistAlbumThumbnails(artistId: String): Flow<List<AlbumThumbnail>>
 
     @Transaction
     @RawQuery(observedEntities = [AlbumEntity::class])
