@@ -169,15 +169,16 @@ class LocalMediaScanner(context: Context) {
      * When false, it is updated only as needed to restore its local path or library availability.
      *
      * Unless [noDisable] is true, duplicate local rows are consolidated, local songs absent from
-     * [newSongs] are disabled, and local album song counts and durations are recalculated.
+     * [newSongs] are disabled, and local album song counts, durations, artists, and artwork are
+     * recalculated.
      *
      * @param newSongs scanned local songs to synchronize
      * @param matchStrength how closely a scanned song must match an existing song
      * @param strictFileNames whether file names participate in matching
      * @param strictFilePaths whether file paths must match
      * @param refreshExisting whether to refresh metadata and relationship rows for matched songs
-     * @param noDisable whether to skip duplicate cleanup, missing-song disabling, and album
-     * recounting
+     * @param noDisable whether to skip duplicate cleanup, missing-song disabling, and local album
+     *     metadata refresh
      */
     suspend fun syncDB(
         database: MusicDatabase,
@@ -382,7 +383,7 @@ class LocalMediaScanner(context: Context) {
         if (!noDisable) {
             reportUnmergedGroups(finalize(database))
             disableSongs(finalSongs.map { it.song }, database)
-            database.awaitTransaction { recountLocalAlbums() }
+            database.awaitTransaction { refreshLocalAlbums() }
         }
         scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Local Library Sync ------------")
@@ -399,7 +400,7 @@ class LocalMediaScanner(context: Context) {
      *
      * - disables local songs whose paths are absent from the resolved input paths
      * - removes duplicate song records and merges duplicate local artists, albums, and genres
-     * - recalculates local album song counts and durations
+     * - recalculates local album song counts, durations, artists, and artwork
      *
      * Cleanup still runs when no new valid song is found. No remote artist lookup is performed.
      *
@@ -528,7 +529,7 @@ class LocalMediaScanner(context: Context) {
         scannerState.value = 3
         disableSongsByPath(converted, database)
         reportUnmergedGroups(finalize(database))
-        database.awaitTransaction { recountLocalAlbums() }
+        database.awaitTransaction { refreshLocalAlbums() }
 
         scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
@@ -547,7 +548,8 @@ class LocalMediaScanner(context: Context) {
      * - an existing non-null library-added timestamp
      *
      * If at least one valid song is found, new songs are inserted, missing local songs are disabled,
-     * duplicate local rows are merged, and local album song counts and durations are recalculated.
+     * duplicate local rows are merged, and local album song counts, durations, artists, and artwork
+     * are recalculated.
      * If no valid song is found, the database is left unchanged.
      *
      * No remote artist lookup is performed. The cached directory tree is not refreshed, so callers

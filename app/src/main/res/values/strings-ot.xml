@@ -32,6 +32,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="queue_searched_songs_ot">Search: </string>
     <string name="song_added_to_queue">\"%s\" inserted into queue</string>
     <string name="song_added_to_queue_end">\"%s\" added to the end of queue</string>
+    <string name="song_playing_in_new_queue">\"%s\" playing in a new queue</string>
     <string name="queues_empty">No queues</string>
 
 <!-- Playlist -->

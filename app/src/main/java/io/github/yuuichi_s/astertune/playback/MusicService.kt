@@ -143,11 +143,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.anilbeesetti.nextlib.media3ext.ffdecoder.NextRenderersFactory
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -671,39 +673,57 @@ class MusicService : MediaLibraryService(),
     }
 
     /**
-     * Add items to queue, right after current playing item
+     * Adds items after the current song, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
-    fun enqueueNext(items: List<MediaItem>) {
-        scope.launch {
-            if (!qbInit.value) {
-                // Wait before starting the new queue
-                if (!qbInit.value) {
-                    queueLoadJob?.join()
-                }
-
-                // when enqueuing next when player isn't active, play as a new song
-                if (items.isNotEmpty()) {
-                    playQueue(
-                        ListQueue(
-                            title = items.first().mediaMetadata.title.toString(),
-                            items = items.mapNotNull { it.metadata }
-                        )
-                    )
-                }
-            } else {
-                // enqueue next
-                queueBoard.value.getCurrentQueue()?.let {
-                    queueBoard.value.addSongsToQueue(it, player.currentMediaItemIndex + 1, items.mapNotNull { it.metadata })
-                }
-            }
-        }
+    fun enqueueNext(items: List<MediaItem>) = enqueue(items) { queue, songs ->
+        queueBoard.value.addSongsToQueue(queue, player.currentMediaItemIndex + 1, songs)
     }
 
     /**
-     * Add items to end of current queue
+     * Adds items to the end of the queue, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
-    fun enqueueEnd(items: List<MediaItem>) {
-        queueBoard.value.enqueueEnd(items.mapNotNull { it.metadata })
+    fun enqueueEnd(items: List<MediaItem>) = enqueue(items) { queue, songs ->
+        queueBoard.value.addSongsToQueue(queue, Int.MAX_VALUE, songs)
+    }
+
+    /**
+     * Adds [items] with [add] to the current queue, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
+     */
+    private fun enqueue(
+        items: List<MediaItem>,
+        add: (MultiQueueObject, List<MediaMetadata>) -> Unit,
+    ): Deferred<Boolean> = scope.async {
+        if (!qbInit.value) {
+            queueLoadJob?.join()
+        }
+        // Use the queue loaded while waiting, but not a dismissed queue retained in memory.
+        val queue = if (qbInit.value) queueBoard.value.getCurrentQueue() else null
+        val songs = items.mapNotNull { it.metadata }
+        if (queue != null) {
+            add(queue, songs)
+            false
+        } else if (items.isNotEmpty()) {
+            playQueue(
+                ListQueue(
+                    title = items.first().mediaMetadata.title.toString(),
+                    items = songs
+                )
+            )
+            true
+        } else {
+            false
+        }
+    }.also { result ->
+        // Callers that do not await the result would not see a failure otherwise.
+        result.invokeOnCompletion { cause ->
+            if (cause != null && cause !is CancellationException) reportException(cause)
+        }
     }
 
     fun triggerShuffle() {

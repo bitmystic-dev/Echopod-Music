@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -100,12 +101,15 @@ fun SongMenu(
 
     val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RW)
 
-    val song = originalSong
+    // Observe the song so that changes made from this menu, such as likes, are shown.
+    val songFlow = remember(database, originalSong.id) { database.song(originalSong.id) }
+    val song = songFlow.collectAsState(initial = originalSong).value ?: originalSong
     val download by LocalDownloadUtil.current.getDownload(originalSong.id).collectAsState(initial = null)
     val coroutineScope =
         CoroutineScope(syncCoroutine) // rememberCoroutineScope has exception "rememberCoroutineScope left the composition"
 
-    val currentFormatState = database.format(originalSong.id).collectAsState(initial = null)
+    val formatFlow = remember(database, originalSong.id) { database.format(originalSong.id) }
+    val currentFormatState = formatFlow.collectAsState(initial = null)
     val currentFormat = currentFormatState.value
 
     var showEditDialog by rememberSaveable {
