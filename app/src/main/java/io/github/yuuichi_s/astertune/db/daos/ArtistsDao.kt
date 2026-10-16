@@ -207,6 +207,21 @@ interface ArtistsDao {
         GROUP BY sam.artistId
     """)
     fun localArtistThumbnails(): Flow<List<LocalArtistThumbnail>>
+
+    /** Whether [path] is the file of a song in the library. */
+    @Query("SELECT EXISTS(SELECT 1 FROM song WHERE localPath = :path AND inLibrary IS NOT NULL)")
+    fun isLibrarySongPath(path: String): Flow<Boolean>
+
+    /** Local artists whose saved artwork is non-local or the file of a song in the library. */
+    @Query("""
+        SELECT id FROM artist
+        WHERE isLocal = 1
+            AND thumbnailUrl IS NOT NULL
+            AND (thumbnailUrl NOT LIKE '/%'
+                OR EXISTS (SELECT 1 FROM song
+                    WHERE song.localPath = artist.thumbnailUrl AND song.inLibrary IS NOT NULL))
+    """)
+    fun localArtistsWithUsableThumbnail(): Flow<List<String>>
     // endregion
 
     // region Artist Songs Sort

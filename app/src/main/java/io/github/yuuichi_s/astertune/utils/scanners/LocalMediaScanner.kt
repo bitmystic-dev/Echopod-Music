@@ -750,10 +750,7 @@ class LocalMediaScanner(context: Context) {
                     deleteAlbumArtistMap(old.id)
                     safeDeleteArtist(old.id)
                 }
-                val bookmarkedAt = (merged + target).mapNotNull { it.bookmarkedAt }.minOrNull()
-                if (bookmarkedAt != target.bookmarkedAt) {
-                    update(target.copy(bookmarkedAt = bookmarkedAt))
-                }
+                mergedArtistUpdate(target, merged)?.let { update(it) }
                 true
             }
         }
@@ -1250,6 +1247,20 @@ class LocalMediaScanner(context: Context) {
 
             return ytmResult
         }
+    }
+}
+
+/**
+ * The survivor [target] after merging [merged] duplicates into it, or null when it does not change.
+ * Keeps the earliest bookmark time, and takes an artist image from the duplicates when [target] has none.
+ */
+internal fun mergedArtistUpdate(target: ArtistEntity, merged: List<ArtistEntity>): ArtistEntity? {
+    val bookmarkedAt = (merged + target).mapNotNull { it.bookmarkedAt }.minOrNull()
+    val thumbnailUrl = target.thumbnailUrl ?: merged.firstNotNullOfOrNull { it.thumbnailUrl }
+    return if (bookmarkedAt != target.bookmarkedAt || thumbnailUrl != target.thumbnailUrl) {
+        target.copy(bookmarkedAt = bookmarkedAt, thumbnailUrl = thumbnailUrl)
+    } else {
+        null
     }
 }
 

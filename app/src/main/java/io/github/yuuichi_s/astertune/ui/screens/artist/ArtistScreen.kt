@@ -132,6 +132,17 @@ fun ArtistScreen(
     val isPlaying by playerConnection.isPlaying.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
+    val isLocalArtist by viewModel.isLocalArtist.collectAsState()
+
+    when (isLocalArtist) {
+        null -> return
+        true -> {
+            LocalArtistScreen(navController, scrollBehavior)
+            return
+        }
+        false -> Unit
+    }
+
     val artistPage = viewModel.artistPage
     val libraryArtist by viewModel.libraryArtist.collectAsState()
     val librarySongs by viewModel.librarySongs.collectAsState()

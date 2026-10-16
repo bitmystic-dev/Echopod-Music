@@ -63,6 +63,9 @@
     <string name="play_all">すべて再生</string>
     <string name="play_next">次に再生</string>
     <string name="add_to_queue">キューに追加</string>
+    <string name="duration_hours_minutes">%1$d時間%2$d分</string>
+    <string name="duration_minutes">%d分</string>
+    <string name="artist_image_auto">自動（最新のアルバム）</string>
     <string name="add_to_library">ライブラリに追加</string>
     <string name="add_all_to_library">すべてライブラリに追加</string>
     <string name="remove_from_library">ライブラリから削除</string>

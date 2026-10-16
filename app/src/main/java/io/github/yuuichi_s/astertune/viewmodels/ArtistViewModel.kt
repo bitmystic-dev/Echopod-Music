@@ -14,6 +14,7 @@ import com.zionhuang.innertube.pages.ArtistPage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,8 +35,15 @@ class ArtistViewModel @Inject constructor(
 
     val isLoading = MutableStateFlow(true)
 
+    /** Whether the artist is a local-media artist; null until the database has been read. */
+    val isLocalArtist = MutableStateFlow<Boolean?>(null)
+
     init {
-        fetchArtistsFromYTM()
+        viewModelScope.launch {
+            val isLocal = database.artist(artistId).first()?.artist?.isLocal == true
+            isLocalArtist.value = isLocal
+            if (!isLocal) fetchArtistsFromYTM()
+        }
     }
 
     fun fetchArtistsFromYTM() {

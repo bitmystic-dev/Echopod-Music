@@ -164,14 +164,15 @@ class LocalLibraryViewModel @Inject constructor(
             combine(
                 database.artists(ArtistFilter.LIBRARY, sortType, descending, localOnly = true),
                 database.localArtistThumbnails(),
-            ) { artists, thumbnails ->
+                database.localArtistsWithUsableThumbnail(),
+            ) { artists, thumbnails, usableIds ->
                 val thumbnailByArtist = thumbnails
                     .filter { it.thumbnailUrl != null }
                     .associate { it.artistId to it.thumbnailUrl }
+                val usable = usableIds.toSet()
                 artists.map { artist ->
-                    val fallback = thumbnailByArtist[artist.id]
-                    if (artist.artist.isLocal && artist.artist.thumbnailUrl == null && fallback != null) {
-                        artist.copy(artist = artist.artist.copy(thumbnailUrl = fallback))
+                    if (artist.artist.isLocal && artist.id !in usable && artist.artist.thumbnailUrl != thumbnailByArtist[artist.id]) {
+                        artist.copy(artist = artist.artist.copy(thumbnailUrl = thumbnailByArtist[artist.id]))
                     } else {
                         artist
                     }
