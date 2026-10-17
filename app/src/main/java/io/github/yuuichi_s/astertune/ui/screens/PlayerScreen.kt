@@ -3,7 +3,6 @@ package io.github.yuuichi_s.astertune.ui.screens
 import android.annotation.SuppressLint
 import android.util.Log
 import io.github.yuuichi_s.astertune.constants.UI_DEBUG
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,7 +10,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
@@ -20,8 +18,6 @@ import androidx.navigation.NavController
 import io.github.yuuichi_s.astertune.LocalPlayerConnection
 import io.github.yuuichi_s.astertune.LocalTabMode
 import io.github.yuuichi_s.astertune.constants.DEFAULT_PLAYER_BACKGROUND
-import io.github.yuuichi_s.astertune.constants.DarkMode
-import io.github.yuuichi_s.astertune.constants.DarkModeKey
 import io.github.yuuichi_s.astertune.constants.MiniPlayerHeight
 import io.github.yuuichi_s.astertune.constants.PlayerBackgroundStyleKey
 import io.github.yuuichi_s.astertune.constants.ShowLyricsKey
@@ -31,6 +27,7 @@ import io.github.yuuichi_s.astertune.ui.component.rememberBottomSheetState
 import io.github.yuuichi_s.astertune.ui.player.LandscapePlayer
 import io.github.yuuichi_s.astertune.ui.player.PlayerBackground
 import io.github.yuuichi_s.astertune.ui.player.PortraitPlayer
+import io.github.yuuichi_s.astertune.ui.theme.rememberUseDarkTheme
 import io.github.yuuichi_s.astertune.utils.rememberEnumPreference
 import io.github.yuuichi_s.astertune.utils.rememberPreference
 
@@ -52,11 +49,7 @@ fun PlayerScreen(
         defaultValue = DEFAULT_PLAYER_BACKGROUND
     )
 
-    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-    val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-    }
+    val useDarkTheme = rememberUseDarkTheme()
 
     val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
 

@@ -39,9 +39,12 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import coil3.toUri
+import io.github.yuuichi_s.astertune.constants.DarkMode
+import io.github.yuuichi_s.astertune.constants.DarkModeKey
 import io.github.yuuichi_s.astertune.playback.PlayerConnection
 import io.github.yuuichi_s.astertune.utils.LocalArtworkPath
 import io.github.yuuichi_s.astertune.utils.coilCoroutine
+import io.github.yuuichi_s.astertune.utils.rememberEnumPreference
 import com.materialkolor.scheme.DynamicScheme
 import com.materialkolor.hct.Hct
 import com.materialkolor.scheme.SchemeTonalSpot
@@ -190,6 +193,20 @@ fun rememberSystemHighContrast(context: Context): Boolean {
     }
 
     return highContrast
+}
+
+/**
+ * Returns whether the app uses the dark theme, following the dark mode preference.
+ *
+ * @param isSystemInDarkTheme Whether the system uses the dark theme, used when the preference
+ *     follows the system.
+ */
+@Composable
+fun rememberUseDarkTheme(isSystemInDarkTheme: Boolean = isSystemInDarkTheme()): Boolean {
+    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
+    return remember(darkTheme, isSystemInDarkTheme) {
+        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
+    }
 }
 
 /**

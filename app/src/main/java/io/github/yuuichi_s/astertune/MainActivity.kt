@@ -108,8 +108,6 @@ import io.github.yuuichi_s.astertune.constants.AppBarHeight
 import io.github.yuuichi_s.astertune.constants.DEFAULT_ENABLED_TABS
 import io.github.yuuichi_s.astertune.constants.CustomThemeColorKey
 import io.github.yuuichi_s.astertune.constants.CustomThemeKey
-import io.github.yuuichi_s.astertune.constants.DarkMode
-import io.github.yuuichi_s.astertune.constants.DarkModeKey
 import io.github.yuuichi_s.astertune.constants.DefaultOpenTabKey
 import io.github.yuuichi_s.astertune.constants.DynamicThemeKey
 import io.github.yuuichi_s.astertune.constants.EnabledTabsKey
@@ -180,6 +178,7 @@ import io.github.yuuichi_s.astertune.ui.screens.settings.SettingsScreen
 import io.github.yuuichi_s.astertune.ui.screens.settings.StorageSettings
 import io.github.yuuichi_s.astertune.ui.theme.DefaultThemeColor
 import io.github.yuuichi_s.astertune.ui.theme.AsterTuneTheme
+import io.github.yuuichi_s.astertune.ui.theme.rememberUseDarkTheme
 import io.github.yuuichi_s.astertune.ui.utils.appBarScrollBehavior
 import io.github.yuuichi_s.astertune.utils.ActivityLauncherHelper
 import io.github.yuuichi_s.astertune.utils.NetworkConnectivityObserver
@@ -266,12 +265,9 @@ class MainActivity : ComponentActivity() {
             val enableDynamicTheme by rememberPreference(DynamicThemeKey, defaultValue = true)
             val customTheme by rememberPreference(CustomThemeKey, defaultValue = false)
             val customThemeColorArgb by rememberPreference(CustomThemeColorKey, defaultValue = DefaultThemeColor.toArgb())
-            val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
             val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
             val isSystemInDarkTheme = isSystemInDarkTheme()
-            val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-                if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-            }
+            val useDarkTheme = rememberUseDarkTheme(isSystemInDarkTheme)
 
             val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
             val configuration = LocalConfiguration.current
