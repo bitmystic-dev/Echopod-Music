@@ -121,8 +121,6 @@
     <string name="pure_black">Ren svart</string>
     <string name="customize_navigation_tabs">Tilpass navigasjonsfaner</string>
     <string name="player">Spiller</string>
-    <string name="player_text_alignment">Spiller-tekstjustering</string>
-    <string name="sided">På siden</string>
     <string name="center">Senter</string>
     <string name="right">Høyre</string>
     <string name="default_">Forvalg</string>

@@ -176,8 +176,6 @@
     <string name="dark_theme_follow_system">Tema do sistema</string>
     <string name="pure_black">Preto puro</string>
     <string name="player">Reprodutor</string>
-    <string name="player_text_alignment">Alinhamento do texto do reprodutor</string>
-    <string name="sided">Lado a lado</string>
     <string name="left">Esquerda</string>
     <string name="center">Centro</string>
     <string name="right">Direita</string>

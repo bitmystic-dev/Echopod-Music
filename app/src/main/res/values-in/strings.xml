@@ -230,7 +230,6 @@
     <string name="queue">Antrean</string>
     <string name="hide_explicit">Sembunyikan konten vulgar</string>
     <string name="auto_skip_next_on_error">Lewati otomatis ke lagu berikutnya ketika terjadi kesalahan</string>
-    <string name="sided">Samping</string>
     <string name="options">Pilihan</string>
     <string name="login_failed">Gagal masuk</string>
     <string name="add_anyway">Tambahkan saja</string>
@@ -244,7 +243,6 @@
     <string name="theme">Tema</string>
     <string name="action_like_all">Sukai semua</string>
     <string name="action_remove_like_all">Hapus semua yang disukai</string>
-    <string name="player_text_alignment">Perataan teks pemutar</string>
     <string name="player_slider_style">Gaya penggeser pemutar</string>
     <string name="player">Pemutar</string>
     <string name="default_">Bawaan</string>

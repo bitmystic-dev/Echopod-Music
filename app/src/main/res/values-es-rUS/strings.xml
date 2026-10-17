@@ -193,7 +193,6 @@
     <string name="pure_black">Negro puro</string>
     <string name="customize_navigation_tabs">Personalizar pestañas de navegación</string>
     <string name="player">Reproductor</string>
-    <string name="player_text_alignment">Alineación del texto del reproductor</string>
     <string name="lyrics_text_position">Posición del texto de la letra</string>
     <string name="left">Izquierda</string>
     <string name="center">Centro</string>
@@ -211,7 +210,6 @@
     <string name="appearance">Apariencia</string>
     <string name="dark_theme_on">Encendido</string>
     <string name="dark_theme_off">Apagado</string>
-    <string name="sided">con bordes</string>
     <string name="default_">Predeterminado</string>
     <string name="grid_cell_size">Tamaño de celda de la cuadrícula</string>
     <string name="login">Inicio de sesión</string>

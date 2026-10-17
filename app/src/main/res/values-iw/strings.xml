@@ -199,13 +199,11 @@
     <string name="dark_theme_follow_system">כמו המערכת</string>
     <string name="customize_navigation_tabs">התאמה אישית של כרטיסיות ניווט</string>
     <string name="player">נגן</string>
-    <string name="sided">צדדי</string>
     <string name="left">שמאל</string>
     <string name="center">מרכז</string>
     <string name="right">ימין</string>
     <string name="player_slider_style">‎סגנון מחוון הנגן</string>
     <string name="default_">ברירת מחדל</string>
-    <string name="player_text_alignment">יישור טקסט של הנגן</string>
     <string name="lyrics_text_position">מיקום מילות השיר</string>
     <string name="squiggly">מתפתל</string>
     <string name="misc">שונות</string>

@@ -236,8 +236,6 @@
     <string name="add_anyway">Ajouter quand même</string>
     <string name="duplicates_description_single">Le titre est déjà dans votre playlist</string>
     <string name="duplicates_description_multiple">%d titres sont déjà dans votre playlist</string>
-    <string name="player_text_alignment">Alignement du texte du lecteur</string>
-    <string name="sided">Sur le côté</string>
     <string name="enable_lrclib">Activer le fournisseur de paroles LrcLib</string>
     <string name="hide_explicit">Masquer le contenu explicite</string>
     <string name="discord_integration">Intégration Discord</string>

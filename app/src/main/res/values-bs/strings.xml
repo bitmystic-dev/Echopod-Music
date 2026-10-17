@@ -223,11 +223,9 @@
     <string name="dark_theme_off">Isključeno</string>
     <string name="pure_black">Čisto crna</string>
     <string name="player">Plejer</string>
-    <string name="player_text_alignment">Poravnanje teksta plejera</string>
     <string name="right">Desno</string>
     <string name="default_open_tab">Zadana otvorena kartica</string>
     <string name="dark_theme_follow_system">Prati sistem</string>
-    <string name="sided">Na strani</string>
     <string name="player_slider_style">Izgled klizača plejera</string>
     <string name="misc">Ostalo</string>
     <string name="content">Sadržaj</string>

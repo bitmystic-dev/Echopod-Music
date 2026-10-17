@@ -168,7 +168,6 @@
     <string name="dark_theme_on">Activat</string>
     <string name="dark_theme_off">Desactivat</string>
     <string name="dark_theme_follow_system">Segueix el sistema</string>
-    <string name="player_text_alignment">Alineació del text del reproductor</string>
     <string name="lyrics_text_position">Posició del text de la lletra</string>
     <string name="pure_black">Negre pur</string>
     <string name="customize_navigation_tabs">Personalitza les pestanyes de navegació</string>
@@ -287,5 +286,4 @@
     <string name="dismiss">Ignora</string>
     <string name="enable_discord_rpc">Activa \"Rich Presence\"</string>
     <string name="error_no_stream">Cap transmissió disponible</string>
-    <string name="sided">Amb vores</string>
 </resources>

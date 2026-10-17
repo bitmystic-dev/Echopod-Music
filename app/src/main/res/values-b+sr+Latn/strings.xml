@@ -161,7 +161,6 @@
     <string name="pure_black">Čisto crna</string>
     <string name="customize_navigation_tabs">Izmeni kartice za navigaciju</string>
     <string name="player">Plejer</string>
-    <string name="player_text_alignment">Poravnanje teksta plejera</string>
     <string name="lyrics_text_position">Pozicija teksta pesama</string>
     <string name="left">Levo</string>
     <string name="center">Centar</string>
@@ -169,7 +168,6 @@
     <string name="player_slider_style">Izgled klizača plejera</string>
     <string name="default_">Podrazumevano</string>
     <string name="squiggly">Valovito</string>
-    <string name="sided">Na strani</string>
     <string name="grid_cell_size">Veličina ćelije mreže</string>
     <string name="small">Malo</string>
     <string name="login">Prijavi se</string>

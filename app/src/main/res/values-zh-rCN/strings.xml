@@ -223,7 +223,6 @@
     <string name="action_remove_like_all">移除全部喜欢</string>
     <string name="theme">主题</string>
     <string name="player">播放器</string>
-    <string name="player_text_alignment">播放器文本对齐</string>
     <string name="default_">默认</string>
     <string name="misc">杂项</string>
     <string name="grid_cell_size">网格大小</string>
@@ -251,7 +250,6 @@
     <string name="tempo_and_pitch">节奏和音调</string>
     <string name="duplicates">重复项</string>
     <string name="skip_duplicates">跳过重复项</string>
-    <string name="sided">靠边</string>
     <string name="squiggly">波浪</string>
     <string name="listen_history">听歌历史</string>
     <string name="search_history">搜索历史</string>

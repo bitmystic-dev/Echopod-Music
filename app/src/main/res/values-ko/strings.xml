@@ -233,7 +233,6 @@
     <string name="duplicates_description_single">음악이 이미 재생목록에 있습니다</string>
     <string name="duplicates_description_multiple">%d곡이 이미 재생목록에 있습니다</string>
     <string name="theme">테마</string>
-    <string name="player_text_alignment">플레이어 텍스트 맞춤</string>
     <string name="player">플레이어</string>
     <string name="default_">기본값</string>
     <string name="grid_cell_size">그리드 셀 크기</string>
@@ -257,7 +256,6 @@
     <string name="action_like_all">모두 좋아요</string>
     <string name="action_remove_like_all">좋아요 모두 취소</string>
     <string name="squiggly">구불구불</string>
-    <string name="sided">측면</string>
     <string name="forgotten_favorites">잊고 있던 좋은 음악</string>
     <string name="other_versions">다른 버전</string>
     <string name="dismiss">다시 보지 않기</string>

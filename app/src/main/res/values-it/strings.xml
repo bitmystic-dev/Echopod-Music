@@ -175,9 +175,7 @@
     <string name="pure_black">Nero</string>
     <string name="default_open_tab">Scheda principale predefinita</string>
     <string name="customize_navigation_tabs">Personalizza le schede di navigazione</string>
-    <string name="player_text_alignment">Allineamento del testo del riproduttore</string>
     <string name="lyrics_text_position">Posizione del testo dei brani</string>
-    <string name="sided">Laterale</string>
     <string name="left">Sinistra</string>
     <string name="center">Centro</string>
     <string name="right">Destra</string>

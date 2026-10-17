@@ -235,7 +235,6 @@
     <string name="remove_from_queue">Aus Warteschlange entfernen</string>
     <string name="duplicates">Duplikate</string>
     <string name="auto_skip_next_on_error">Automatisch zum nächsten Song springen, wenn ein Fehler auftritt</string>
-    <string name="sided">Seite</string>
     <string name="library_artist_empty">Künstler aus der Bibliothek werden hier angezeigt</string>
     <string name="player">Player</string>
     <string name="preview">Vorschau</string>
@@ -246,7 +245,6 @@
     <string name="enable_discord_rpc">Statusanzeige aktivieren</string>
     <string name="auto_skip_next_on_error_desc">Sorge für ein kontinuierliches Wiedergabeerlebnis</string>
     <string name="dismiss">Ablehnen</string>
-    <string name="player_text_alignment">Ausrichtung des Player-textes</string>
     <string name="disable_screenshot">Screenshots deaktivieren</string>
     <string name="small">Klein</string>
     <string name="login_failed">Anmeldung fehlgeschlagen</string>

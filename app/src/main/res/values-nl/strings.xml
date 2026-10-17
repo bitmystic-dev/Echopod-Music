@@ -249,8 +249,6 @@
     <string name="action_remove_like_all">Alle \'vind ik leuks\' verwijderen</string>
     <string name="theme">Thema</string>
     <string name="player">Speler</string>
-    <string name="player_text_alignment">Tekstuitlijning van speler</string>
-    <string name="sided">Zijdig</string>
     <string name="player_slider_style">Speler schuifregelaar-stijl</string>
     <string name="default_">Standaard</string>
     <string name="squiggly">Kronkelend</string>
