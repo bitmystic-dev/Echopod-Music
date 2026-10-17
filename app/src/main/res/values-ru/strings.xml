@@ -85,7 +85,7 @@
     <string name="remove_from_queue">Удалить из очереди</string>
     <string name="search_online">Поиск в Интернете</string>
     <string name="action_sync">Синхронизировать</string>
-    <string name="advanced">Контроль аудио</string>
+    <string name="advanced">Дополнительно</string>
     <string name="tempo_and_pitch">Темп и высота тона</string>
     <string name="sort_by_create_date">Недавно добавленные</string>
     <string name="sort_by_name">Название</string>
@@ -274,7 +274,7 @@
     <string name="enable_lrclib">Включить провайдера текстов LrcLib</string>
     <string name="enable_kugou">Включить провайдера текстов KuGou</string>
     <string name="hide_explicit">Скрывать контент с нецензурной лексикой</string>
-    <string name="backup_restore">Резервное копирование</string>
+    <string name="backup_restore">Резервное копирование и восстановление</string>
     <string name="action_backup">Создать резервную копию</string>
     <string name="action_restore">Восстановить из резервной копии</string>
     <string name="imported_playlist">Импортированный плейлист</string>
@@ -294,7 +294,19 @@
     <string name="new_version_available">Доступна новая версия</string>
     <string name="translation_models">Модели перевода</string>
     <string name="clear_translation_models">Очистить модели перевода</string>
-    <string name="use_login_for_browse">Авторизуйтесь для просмотра контента</string>
-    <string name="use_login_for_browse_desc">Это влияет на отображение контента и, в частности, открывает доступ к премиум-альбомам при входе с премиум-учётной записью</string>
+    <string name="use_login_for_browse">Использовать аккаунт для просмотра контента</string>
+    <string name="use_login_for_browse_desc">Это может влиять на отображаемый контент: например, при входе с аккаунтом Premium могут отображаться альбомы, доступные только подписчикам Premium</string>
     <string name="action_login">Войти</string>
+    <string name="duration_hours_minutes">%1$d ч %2$d мин</string>
+    <string name="duration_minutes">%d мин</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Автоматически (последний альбом)</string>
+    <string name="custom_accent_color">Свой цвет акцента</string>
+    <string name="custom_accent_color_description">Использовать выбранный вами фиксированный цвет акцента во всём приложении</string>
+    <string name="accent_color">Цвет акцента</string>
+    <string name="minimize_player">Свернуть плеер</string>
+    <string name="ignore_audio_focus">Сохранять аудиофокус</string>
+    <string name="ignore_audio_focus_desc">Продолжать воспроизведение, когда другое приложение получает аудиофокус. Музыка не будет приостанавливаться из-за других источников звука, включая телефонные звонки.</string>
+    <string name="enable_betterlyrics">Включить провайдера текстов BetterLyrics</string>
+    <string name="enable_simpmusic">Включить провайдера текстов SimpMusic</string>
 </resources>
