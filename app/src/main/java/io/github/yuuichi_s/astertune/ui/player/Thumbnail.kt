@@ -40,6 +40,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.media3.common.PlaybackException
 import coil3.compose.AsyncImage
 import io.github.yuuichi_s.astertune.LocalPlayerConnection
 import io.github.yuuichi_s.astertune.constants.PlayerHorizontalPadding
@@ -48,6 +49,18 @@ import io.github.yuuichi_s.astertune.constants.ThumbnailCornerRadius
 import io.github.yuuichi_s.astertune.models.MediaMetadata
 import io.github.yuuichi_s.astertune.ui.component.Lyrics
 import io.github.yuuichi_s.astertune.utils.rememberPreference
+
+/**
+ * Returns whether [Thumbnail] shows the artwork rather than lyrics or a playback error.
+ */
+internal fun isArtworkShown(showLyrics: Boolean, error: PlaybackException?): Boolean =
+    !showLyrics && error == null
+
+/**
+ * Returns whether [Thumbnail] shows the lyrics rather than the artwork or a playback error.
+ */
+internal fun isLyricsShown(showLyrics: Boolean, error: PlaybackException?): Boolean =
+    showLyrics && error == null
 
 /**
  * Displays the player's artwork, lyrics, or a playback error.
@@ -87,7 +100,7 @@ fun Thumbnail(
 
     Box(modifier = modifier) {
         AnimatedVisibility(
-            visible = !showLyrics && error == null,
+            visible = isArtworkShown(showLyrics, error),
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
@@ -127,7 +140,7 @@ fun Thumbnail(
         }
 
         AnimatedVisibility(
-            visible = showLyrics && error == null,
+            visible = isLyricsShown(showLyrics, error),
             enter = fadeIn(),
             exit = fadeOut()
         ) {

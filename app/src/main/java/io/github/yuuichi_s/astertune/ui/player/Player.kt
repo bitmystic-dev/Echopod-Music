@@ -13,6 +13,7 @@ package io.github.yuuichi_s.astertune.ui.player
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
@@ -26,7 +27,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -133,8 +133,6 @@ import io.github.yuuichi_s.astertune.LocalPlayerConnection
 import io.github.yuuichi_s.astertune.LocalTabMode
 import io.github.yuuichi_s.astertune.R
 import io.github.yuuichi_s.astertune.constants.DEFAULT_PLAYER_BACKGROUND
-import io.github.yuuichi_s.astertune.constants.DarkMode
-import io.github.yuuichi_s.astertune.constants.DarkModeKey
 import io.github.yuuichi_s.astertune.constants.PlayerBackgroundStyle
 import io.github.yuuichi_s.astertune.constants.PlayerBackgroundStyleKey
 import io.github.yuuichi_s.astertune.constants.PLAYER_DEBUG
@@ -156,6 +154,7 @@ import io.github.yuuichi_s.astertune.extensions.supportsWideScreen
 import io.github.yuuichi_s.astertune.extensions.usesLandscapePlayer
 import io.github.yuuichi_s.astertune.extensions.togglePlayPause
 import io.github.yuuichi_s.astertune.extensions.toggleRepeatMode
+import io.github.yuuichi_s.astertune.models.MultiQueueObject
 import io.github.yuuichi_s.astertune.playback.PlayerConnection
 import io.github.yuuichi_s.astertune.playback.QueueBoard
 import io.github.yuuichi_s.astertune.ui.component.BottomSheet
@@ -169,6 +168,7 @@ import io.github.yuuichi_s.astertune.ui.menu.PlayerMenu
 import io.github.yuuichi_s.astertune.ui.menu.SleepTimerDialog
 import io.github.yuuichi_s.astertune.ui.theme.extractGradientColors
 import io.github.yuuichi_s.astertune.ui.theme.rememberPlayerButtonColors
+import io.github.yuuichi_s.astertune.ui.theme.rememberUseDarkTheme
 import io.github.yuuichi_s.astertune.ui.utils.SnapLayoutInfoProvider
 import io.github.yuuichi_s.astertune.utils.coilCoroutine
 import io.github.yuuichi_s.astertune.utils.makeTimeString
@@ -199,11 +199,7 @@ fun BottomSheetPlayer(
         defaultValue = DEFAULT_PLAYER_BACKGROUND
     )
 
-    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-    val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-    }
+    val useDarkTheme = rememberUseDarkTheme()
 
     val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
 
@@ -390,6 +386,9 @@ fun PortraitPlayer(
             }
 
             PlayerCollapseButton(onCollapse = onCollapse, topInset = statusBarTop)
+            if (onCollapse != null) {
+                QueuePosition(topInset = statusBarTop)
+            }
         }
 
         ControlsContent(playerSheetState, queueSheetState, navController, queueBoard)
@@ -569,7 +568,7 @@ fun LandscapePlayer(
 
         val showQueueHint = context.supportsWideScreen()
         // Ignore the last artwork position while lyrics or a playback error are shown.
-        val artworkHidden = showLyrics || error != null
+        val artworkHidden = !isArtworkShown(showLyrics, error)
         Layout(
             content = {
                 ControlsContent(playerSheetState, queueSheetState, navController, queueBoard)
@@ -674,6 +673,81 @@ private fun BoxScope.PlayerCollapseButton(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             contentDescription = stringResource(R.string.minimize_player),
         )
+    }
+}
+
+/**
+ * Displays the current song's position in the queue and the queue size, such as "2/10", at the top
+ * center while the artwork is shown.
+ */
+@Composable
+private fun BoxScope.QueuePosition(topInset: Dp) {
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val color = rememberPlayerOnBackgroundColor(rememberUseDarkTheme())
+    val queueWindows by playerConnection.queueWindows.collectAsState()
+    val currentWindowIndex by playerConnection.currentWindowIndex.collectAsState()
+    val queueBoard by playerConnection.queueBoard.collectAsState()
+    val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+    val error by playerConnection.error.collectAsState()
+    val (index, size) = if (queueWindows.isNotEmpty()) {
+        if (currentWindowIndex !in queueWindows.indices) return
+        currentWindowIndex to queueWindows.size
+    } else {
+        // The current queue is not loaded into the player yet, such as one restored at startup.
+        queueBoard.getCurrentQueue()?.playbackPosition() ?: return
+    }
+
+    // Fades with the artwork in Thumbnail.
+    AnimatedVisibility(
+        visible = isArtworkShown(showLyrics, error),
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(top = topInset)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.heightIn(min = CollapseButtonSize)
+        ) {
+            Text(
+                text = "${index + 1}/$size",
+                style = MaterialTheme.typography.titleMedium,
+                color = color,
+            )
+        }
+    }
+}
+
+/**
+ * Returns the current song's index in playback order and the queue size, or null when the stored
+ * position is outside the queue. Unlike [MultiQueueObject.getQueuePosShuffled], leaves the queue
+ * unchanged.
+ */
+private fun MultiQueueObject.playbackPosition(): Pair<Int, Int>? {
+    val song = queue.getOrNull(queuePos) ?: return null
+    val index = if (shuffled) song.shuffleIndex else queuePos
+    return if (index in queue.indices) index to queue.size else null
+}
+
+/**
+ * Returns the color of the text drawn on the player background, such as the song title and artists.
+ */
+@Composable
+private fun rememberPlayerOnBackgroundColor(useDarkTheme: Boolean): Color {
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = DEFAULT_PLAYER_BACKGROUND
+    )
+    return when (playerBackground) {
+        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
+        else ->
+            if (useDarkTheme)
+                MaterialTheme.colorScheme.onSurface
+            else {
+                val c = MaterialTheme.colorScheme.secondary
+                c.copy(alpha = 1f, red = c.red - 0.2f, green = c.green - 0.2f, blue = c.blue - 0.2f)
+            }
     }
 }
 
@@ -905,16 +979,7 @@ fun ControlsContent(
 
     val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
 
-    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-    val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-    }
-
-    val playerBackground by rememberEnumPreference(
-        key = PlayerBackgroundStyleKey,
-        defaultValue = DEFAULT_PLAYER_BACKGROUND
-    )
+    val useDarkTheme = rememberUseDarkTheme()
 
     val sliderStyle by rememberEnumPreference(
         key = SliderStyleKey,
@@ -923,17 +988,7 @@ fun ControlsContent(
 
     val (buttonContainerColor, buttonContentColor) = rememberPlayerButtonColors()
 
-
-    val onBackgroundColor = when (playerBackground) {
-        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
-        else ->
-            if (useDarkTheme)
-                MaterialTheme.colorScheme.onSurface
-            else {
-                val c = MaterialTheme.colorScheme.secondary
-                c.copy(alpha = 1f, red = c.red - 0.2f, green = c.green - 0.2f, blue = c.blue - 0.2f)
-            }
-    }
+    val onBackgroundColor = rememberPlayerOnBackgroundColor(useDarkTheme)
 
     // In the dark theme, the skip and seek buttons around play/pause share its content color.
     val skipButtonColor = if (useDarkTheme) buttonContentColor else onBackgroundColor

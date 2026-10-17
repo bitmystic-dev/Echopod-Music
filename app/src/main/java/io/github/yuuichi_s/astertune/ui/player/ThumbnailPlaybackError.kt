@@ -15,7 +15,6 @@ import android.content.ClipData
 import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,10 +46,9 @@ import androidx.media3.common.PlaybackException
 import io.github.yuuichi_s.astertune.BuildConfig
 import io.github.yuuichi_s.astertune.R
 import io.github.yuuichi_s.astertune.constants.DEFAULT_PLAYER_BACKGROUND
-import io.github.yuuichi_s.astertune.constants.DarkMode
-import io.github.yuuichi_s.astertune.constants.DarkModeKey
 import io.github.yuuichi_s.astertune.constants.PlayerBackgroundStyle
 import io.github.yuuichi_s.astertune.constants.PlayerBackgroundStyleKey
+import io.github.yuuichi_s.astertune.ui.theme.rememberUseDarkTheme
 import io.github.yuuichi_s.astertune.ui.utils.fadingEdge
 import io.github.yuuichi_s.astertune.utils.rememberEnumPreference
 
@@ -67,11 +65,7 @@ fun ThumbnailPlaybackError(
         key = PlayerBackgroundStyleKey,
         defaultValue = DEFAULT_PLAYER_BACKGROUND
     )
-    val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
-    val isSystemInDarkTheme = isSystemInDarkTheme()
-    val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
-        if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
-    }
+    val useDarkTheme = rememberUseDarkTheme()
 
     val textColor = when (playerBackground) {
         PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
