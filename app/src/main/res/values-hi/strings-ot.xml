@@ -4,7 +4,7 @@
     <string name="android_auto">एंड्रॉइड ऑटो</string>
     <string name="folders">फ़ोल्डर</string>
     <string name="library">संग्रह</string>
-    <string name="recent_activity">गतिविधि</string>
+    <string name="recent_activity">हाल की गतिविधि</string>
     <string name="local_history">स्थानीय</string>
     <string name="queue_local_history">स्थानीय इतिहास</string>
     <string name="queue_remote_history">दूरस्थ इतिहास</string>
@@ -13,7 +13,7 @@
     <string name="queues_title">कतार</string>
     <string name="create_queue">नई कतार</string>
     <string name="queue_searched_songs_ot">खोजें:</string>
-    <string name="queues_empty">कतार खाली है</string>
+    <string name="queues_empty">कोई कतार नहीं</string>
     <string name="auto_playlist">ऑटो प्लेलिस्ट</string>
     <string name="select">चयन मोड</string>
     <string name="like_all">सभी को लाइक करें</string>
@@ -21,11 +21,11 @@
     <string name="err_play_next_on_error">त्रुटि आई, अगला गाना चला रहे हैं</string>
     <string name="err_stop_on_error">त्रुटि हुई। गाना रुक गया</string>
     <string name="err_stop_on_too_many_errors">कई त्रुटियाँ हुईं। चलाना बंद हुआ</string>
-    <string name="wait_to_reconnect">कनेक्शन पुनः स्थापित हो रहा है</string>
+    <string name="wait_to_reconnect">दोबारा कनेक्ट होने की प्रतीक्षा करें</string>
     <string name="sort_by_date_modified">संशोधित तिथि</string>
     <string name="song_added_to_queue">\"%s\" कतार में जोड़ा गया</string>
     <string name="song_added_to_queue_end">\"%s\" को कतार के अंत में जोड़ा गया</string>
-    <string name="delete_lyric_confirm">क्या आप वाकई \"%s\" के लिए संग्रहीत गीतों को हटाना चाहते हैं?</string>
+    <string name="delete_lyric_confirm">क्या आप वाकई \"%s\" के लिए सहेजे गए गीत के बोल हटाना चाहते हैं?</string>
     <string name="sort_by_date_released">जारी तिथि</string>
     <string name="sort_by_like_date">लाइक की तारीख़</string>
     <string name="sort_by_play_count">चलाने की संख्या</string>
@@ -49,7 +49,7 @@
     <string name="create_sync_playlist_description">ध्यान दें: इससे YouTube Music के साथ सिंक करने की सुविधा मिलती है। इसे बाद में बदला नहीं जा सकता। आप सिंक की गई प्लेलिस्ट में लोकल गीत नहीं जोड़ सकते।</string>
     <string name="playlist_add_local_to_synced_note">नोट: स्थानीय गानों को सिंक/रिमोट प्लेलिस्ट में जोड़ना समर्थित नहीं है। अन्य सभी संयोजन मान्य हैं</string>
     <string name="grp_lyrics_parser">विश्लेषक</string>
-    <string name="grp_lyrics_source">गीत स्रोत</string>
+    <string name="grp_lyrics_source">गीत के बोल के स्रोत</string>
     <string name="grp_manual_scanner">मैनुअल स्कैनर</string>
     <string name="grp_proxy">प्रॉक्सी</string>
     <string name="grp_sync">सिंक</string>
@@ -144,7 +144,7 @@
     <string name="disc_number">डिस्क नंबर</string>
     <string name="extra_details">अतिरिक्त जानकारी</string>
     <string name="file_path">फ़ाइल का स्थान</string>
-    <string name="track_number">गीत संख्या</string>
+    <string name="track_number">ट्रैक संख्या</string>
     <string name="toggle_lyrics">गीत के बोल दिखाएँ/छुपाएँ</string>
     <string name="app_info_title">ऐप की जानकारी</string>
     <string name="device_info_title">उपकरण संबंधी जानकारी</string>
@@ -164,7 +164,7 @@
     <string name="audio_decoder_ffmpeg_only">FFmpeg डिकोडर्स को प्राथमिकता दें</string>
     <string name="audio_decoder_system_with_ffmpeg">सिस्टम डिकोडर्स को प्राथमिकता दें</string>
     <string name="att_project_support">प्रोजेक्ट सपोर्ट</string>
-    <string name="seek_increment">सीक वृद्धि</string>
+    <string name="seek_increment">आगे/पीछे जाने का अंतराल</string>
     <string name="lyrics_synced_clickable">क्लिक करने योग्य लिरिक्स</string>
     <string name="att_translator">अनुवादक (%s)</string>
     <string name="action_logout_tooltip">पूरी तरह से लॉग आउट करने के लिए, कृपया वेब पोर्टल में अपने YouTube खाते से साइन आउट करें इस लॉगआउट बटन का उपयोग करने से पहले</string>
@@ -289,4 +289,5 @@
     <string name="speed_medium">मध्यम</string>
     <string name="speed_fast">तेज़</string>
     <string name="speed_very_fast">बहुत तेज़</string>
+    <string name="song_playing_in_new_queue">\"%s\" नई कतार में चल रहा है</string>
 </resources>
