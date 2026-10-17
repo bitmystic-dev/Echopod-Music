@@ -155,28 +155,32 @@ class PlayerConnection(
     }
 
     /**
-     * Add item to queue, right after current playing item
+     * Adds the item after the current song, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
     fun enqueueNext(item: MediaItem) = enqueueNext(listOf(item))
 
     /**
-     * Add items to queue, right after current playing item
+     * Adds items after the current song, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
-    fun enqueueNext(items: List<MediaItem>) {
-        service.enqueueNext(items)
-    }
+    fun enqueueNext(items: List<MediaItem>) = service.enqueueNext(items)
 
     /**
-     * Add item to end of current queue
+     * Adds the item to the end of the queue, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
     fun enqueueEnd(item: MediaItem) = enqueueEnd(listOf(item))
 
     /**
-     * Add items to end of current queue
+     * Adds items to the end of the queue, or requests a new queue if none is open.
+     *
+     * @return a deferred result indicating whether playback in a new queue was requested
      */
-    fun enqueueEnd(items: List<MediaItem>) {
-        service.enqueueEnd(items)
-    }
+    fun enqueueEnd(items: List<MediaItem>) = service.enqueueEnd(items)
 
     fun toggleLike() {
         service.toggleLike()

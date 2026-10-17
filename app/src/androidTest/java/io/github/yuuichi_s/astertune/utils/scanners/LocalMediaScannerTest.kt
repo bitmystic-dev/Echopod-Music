@@ -61,6 +61,7 @@ class LocalMediaScannerTest {
         quick(file)
         val song = database.allLocalDbSongs().single()
         assertTags(song, "Scanner Song A", "Original Artist", "Original Album")
+        assertAlbumArtists(song, "Original Artist")
         assertEquals(file.absolutePath, song.song.localPath)
         assertNotNull(song.song.inLibrary)
         assertTrue(song.song.isLocal)
@@ -98,6 +99,7 @@ class LocalMediaScannerTest {
         assertEquals(before.id, after.id)
         assertEquals(before.song.inLibrary, after.song.inLibrary)
         assertTags(after, "Scanner Song A", "Updated Artist", "Updated Album")
+        assertAlbumArtists(after, "Updated Artist")
         assertNotNull(database.format(after.id).first())
     }
 
@@ -152,5 +154,10 @@ class LocalMediaScannerTest {
         assertEquals(album, song.album?.title)
         assertNotNull(song.song.albumId)
         assertEquals(song.song.albumId, song.album?.id)
+    }
+
+    private suspend fun assertAlbumArtists(song: Song, vararg artists: String) {
+        val album = database.album(requireNotNull(song.song.albumId)).first()
+        assertEquals(artists.toList(), album?.artists?.map { it.name })
     }
 }

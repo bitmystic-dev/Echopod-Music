@@ -7,6 +7,7 @@
     <string name="queue_searched_songs_ot">検索:</string>
     <string name="song_added_to_queue">\"%s\"を次のキューに追加しました</string>
     <string name="song_added_to_queue_end">\"%s\"をキューの最後に追加しました</string>
+    <string name="song_playing_in_new_queue">\"%s\"を新しいキューで再生します</string>
     <string name="auto_playlist">自動再生リスト</string>
     <string name="select">選択モード</string>
     <string name="like_all">すべてにいいね</string>

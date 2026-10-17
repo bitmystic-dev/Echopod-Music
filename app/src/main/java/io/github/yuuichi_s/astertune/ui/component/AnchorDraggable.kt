@@ -54,7 +54,9 @@ import androidx.media3.common.MediaItem
 import io.github.yuuichi_s.astertune.LocalPlayerConnection
 import io.github.yuuichi_s.astertune.R
 import io.github.yuuichi_s.astertune.constants.SNACKBAR_VERY_SHORT
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -77,11 +79,17 @@ fun SwipeToQueueBox(
 
     SwipeActionBox(
         firstAction = Pair(Icons.AutoMirrored.Rounded.PlaylistPlay, {
-            playerConnection?.enqueueNext(item)
+            val playedAsNewQueue = playerConnection?.enqueueNext(item)
             coroutineScope.launch {
+                val newQueue = playedAsNewQueue.awaitOrNull() ?: return@launch
                 snackbarHostState?.showSnackbar(
                     message = resources.getString(
-                        R.string.song_added_to_queue,
+                        if (newQueue) {
+                            R.string.song_playing_in_new_queue
+                        }
+                        else {
+                            R.string.song_added_to_queue
+                        },
                         item.mediaMetadata.title
                     ),
                     withDismissAction = true,
@@ -90,14 +98,21 @@ fun SwipeToQueueBox(
             }
         }),
         secondAction = Pair(Icons.AutoMirrored.Rounded.PlaylistAdd, {
-            playerConnection?.enqueueEnd(item)
+            val playedAsNewQueue = playerConnection?.enqueueEnd(item)
             coroutineScope.launch {
+                val newQueue = playedAsNewQueue.awaitOrNull() ?: return@launch
+                val message = resources.getString(
+                    if (newQueue) {
+                        R.string.song_playing_in_new_queue
+                    }
+                    else {
+                        R.string.song_added_to_queue_end
+                    },
+                    item.mediaMetadata.title
+                )
                 val job = launch {
                     snackbarHostState?.showSnackbar(
-                        message = resources.getString(
-                            R.string.song_added_to_queue_end,
-                            item.mediaMetadata.title
-                        ),
+                        message = message,
                         withDismissAction = true,
                         duration = SnackbarDuration.Indefinite
                     )
@@ -240,6 +255,18 @@ fun SwipeActionBox(
             }
         }
     }
+}
+
+/**
+ * The result of an enqueue request, or null when there is no request or it failed. A failure is
+ * reported where the request runs.
+ */
+private suspend fun Deferred<Boolean>?.awaitOrNull(): Boolean? = try {
+    this?.await()
+} catch (e: CancellationException) {
+    throw e
+} catch (e: Exception) {
+    null
 }
 
 private fun resetDrag(scope: CoroutineScope, offset: MutableState<Float>) {

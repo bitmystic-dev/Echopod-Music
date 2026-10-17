@@ -285,10 +285,11 @@ class LibraryArtistsViewModel @Inject constructor(
                 artists
                     ?.map { it.artist }
                     ?.filter {
-                        it.thumbnailUrl == null || Duration.between(
-                            it.lastUpdateTime,
-                            LocalDateTime.now()
-                        ) > Duration.ofDays(10)
+                        it.isYouTubeArtist &&
+                                (it.thumbnailUrl == null || Duration.between(
+                                    it.lastUpdateTime,
+                                    LocalDateTime.now()
+                                ) > Duration.ofDays(10))
                     }
                     ?.forEach { artist ->
                         YouTube.artist(artist.id).onSuccess { artistPage ->

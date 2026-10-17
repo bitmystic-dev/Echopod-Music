@@ -55,14 +55,22 @@ data class SongEntity(
         likedDate = if (!liked) LocalDateTime.now() else null,
     )
 
-    fun toggleLike() = copy(
-        liked = !liked,
-        likedDate = if (!liked) LocalDateTime.now() else null,
-        inLibrary = if (!liked) inLibrary ?: LocalDateTime.now() else inLibrary
-    ).also {
-        CoroutineScope(syncCoroutine).launch {
-            YouTube.likeVideo(id, !liked)
-            this.cancel()
+    /**
+     * Toggles likes and syncs the change for YouTube songs. Liking also adds them to the library.
+     * Local songs keep their library state and are not synced: their IDs are not YouTube video IDs.
+     */
+    fun toggleLike() = if (isLocal) {
+        localToggleLike()
+    } else {
+        copy(
+            liked = !liked,
+            likedDate = if (!liked) LocalDateTime.now() else null,
+            inLibrary = if (!liked) inLibrary ?: LocalDateTime.now() else inLibrary
+        ).also {
+            CoroutineScope(syncCoroutine).launch {
+                YouTube.likeVideo(id, !liked)
+                this.cancel()
+            }
         }
     }
 

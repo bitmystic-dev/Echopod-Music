@@ -21,6 +21,7 @@ import io.github.yuuichi_s.astertune.db.entities.AlbumWithSongs
 import io.github.yuuichi_s.astertune.db.entities.ArtistEntity
 import io.github.yuuichi_s.astertune.db.entities.Song
 import io.github.yuuichi_s.astertune.db.entities.SongAlbumMap
+import io.github.yuuichi_s.astertune.db.entities.SongEntity
 import io.github.yuuichi_s.astertune.extensions.reversed
 import com.zionhuang.innertube.models.AlbumItem
 import kotlinx.coroutines.flow.Flow
@@ -53,7 +54,8 @@ interface AlbumsDao : ArtistsDao {
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
             LEFT JOIN song ON song.albumId = album.id
-        WHERE album.title LIKE '%' || :query || '%' AND (song.inLibrary IS NOT NULL OR song.dateDownload IS NOT NULL)
+        WHERE album.title LIKE '%' || :query || '%' 
+            AND (song.inLibrary IS NOT NULL OR song.dateDownload IS NOT NULL)
         GROUP BY album.id
         LIMIT :previewSize
     """)
@@ -63,7 +65,8 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT *
         FROM album
-        WHERE album.isLocal = 1 AND album.title LIKE '%' || :query || '%'
+        WHERE album.isLocal = 1 
+            AND album.title LIKE '%' || :query || '%'
         LIMIT :previewSize
     """)
     fun localAlbumsByNameFuzzy(query: String, previewSize: Int = Int.MAX_VALUE): List<AlbumEntity>
@@ -120,6 +123,38 @@ interface AlbumsDao : ArtistsDao {
     fun deleteSongAlbumMap(albumId: String)
 
     /**
+     * Recalculate every local album from its library songs: song counts and durations, then
+     * album artists and artwork.
+     */
+    @Transaction
+    fun refreshLocalAlbums() {
+        recountLocalAlbums()
+        deleteLocalAlbumArtistMaps()
+        insertLocalAlbumArtistMaps()
+        updateLocalAlbumThumbnails()
+    }
+
+    @Query("DELETE FROM album_artist_map WHERE albumId IN (SELECT id FROM album WHERE isLocal = 1)")
+    fun deleteLocalAlbumArtistMaps()
+
+    /**
+     * Links each local album to the artists of its library songs, using each artist's smallest
+     * position on those songs as the mapping's order.
+     */
+    @Query("""
+        INSERT OR IGNORE INTO album_artist_map (albumId, artistId, `order`)
+        SELECT song_album_map.albumId, song_artist_map.artistId, MIN(song_artist_map.position)
+        FROM song_album_map
+            INNER JOIN album ON song_album_map.albumId = album.id
+            INNER JOIN song ON song_album_map.songId = song.id
+            INNER JOIN song_artist_map ON song_artist_map.songId = song.id
+        WHERE album.isLocal = 1
+            AND song.inLibrary IS NOT NULL
+        GROUP BY song_album_map.albumId, song_artist_map.artistId
+    """)
+    fun insertLocalAlbumArtistMaps()
+
+    /**
      * Recount songCount and duration of every local album from its linked songs, replacing the
      * running totals kept by the song insert and scanner update paths.
      */
@@ -128,20 +163,45 @@ interface AlbumsDao : ArtistsDao {
         SET songCount = (
                 SELECT COUNT(*)
                 FROM song_album_map
-                    JOIN song ON song_album_map.songId = song.id
+                    INNER JOIN song ON song_album_map.songId = song.id
                 WHERE song_album_map.albumId = album.id
                     AND song.inLibrary IS NOT NULL
             ),
             duration = (
                 SELECT COALESCE(SUM(song.duration), 0)
                 FROM song_album_map
-                    JOIN song ON song_album_map.songId = song.id
+                    INNER JOIN song ON song_album_map.songId = song.id
                 WHERE song_album_map.albumId = album.id
                     AND song.inLibrary IS NOT NULL
             )
         WHERE album.isLocal = 1
     """)
     fun recountLocalAlbums()
+
+    /**
+     * Point each local album's artwork at a file that is still a library song: non-local artwork
+     * and artwork whose file is a library song are kept, otherwise a library song of the album is
+     * used, or none when the album has no library song.
+     */
+    @Query("""
+        UPDATE album
+        SET thumbnailUrl = COALESCE(
+                CASE WHEN album.thumbnailUrl NOT LIKE '/%' THEN album.thumbnailUrl END,
+                (SELECT s.localPath 
+                 FROM song s
+                 WHERE s.localPath = album.thumbnailUrl 
+                    AND s.inLibrary IS NOT NULL
+                 LIMIT 1),
+                (SELECT MIN(s.localPath) 
+                 FROM song_album_map m 
+                    INNER JOIN song s ON s.id = m.songId
+                 WHERE m.albumId = album.id 
+                    AND s.inLibrary IS NOT NULL 
+                    AND s.localPath IS NOT NULL)
+            )
+        WHERE album.isLocal = 1
+    """)
+    fun updateLocalAlbumThumbnails()
 
     @Query(
         """
@@ -186,7 +246,7 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT song.*
         FROM song
-            JOIN song_album_map ON song.id = song_album_map.songId
+            INNER JOIN song_album_map ON song.id = song_album_map.songId
         WHERE song_album_map.albumId = :albumId
             AND (song.isLocal = 0 OR song.inLibrary IS NOT NULL)
         ORDER BY song_album_map.`index`
@@ -197,8 +257,8 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album
-            JOIN song ON album.id = song.albumId
-            JOIN event ON song.id = event.songId
+            INNER JOIN song ON album.id = song.albumId
+            INNER JOIN event ON song.id = event.songId
         WHERE event.timestamp > :fromTimeStamp
         GROUP BY album.id
         ORDER BY SUM(event.playTime) DESC
@@ -210,8 +270,8 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album_artist_map 
-            JOIN album ON album_artist_map.albumId = album.id
-            JOIN song ON album_artist_map.albumId = song.albumId
+            INNER JOIN album ON album_artist_map.albumId = album.id
+            INNER JOIN song ON album_artist_map.albumId = song.albumId
         WHERE artistId = :artistId
         GROUP BY album.id
         LIMIT :previewSize
@@ -222,8 +282,8 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM album_artist_map
-            JOIN album ON album_artist_map.albumId = album.id
-            JOIN song ON album_artist_map.albumId = song.albumId
+            INNER JOIN album ON album_artist_map.albumId = album.id
+            INNER JOIN song ON album_artist_map.albumId = song.albumId
         WHERE artistId = :artistId
         GROUP BY album.id
     """)
@@ -234,9 +294,9 @@ interface AlbumsDao : ArtistsDao {
     @Query("""
         SELECT album.*, count(song.dateDownload) downloadCount
         FROM song_artist_map
-            JOIN song ON song_artist_map.songId = song.id
-            JOIN song_album_map ON song_album_map.songId = song.id
-            JOIN album ON song_album_map.albumId = album.id
+            INNER JOIN song ON song_artist_map.songId = song.id
+            INNER JOIN song_album_map ON song_album_map.songId = song.id
+            INNER JOIN album ON song_album_map.albumId = album.id
         WHERE song_artist_map.artistId = :artistId
             AND song.inLibrary IS NOT NULL
         GROUP BY album.id
@@ -251,18 +311,24 @@ interface AlbumsDao : ArtistsDao {
         SELECT album.id AS albumId,
                COALESCE(
                    CASE WHEN album.thumbnailUrl NOT LIKE '/%' THEN album.thumbnailUrl END,
-                   (SELECT s.localPath FROM song s
-                    WHERE s.localPath = album.thumbnailUrl AND s.inLibrary IS NOT NULL
+                   (SELECT s.localPath 
+                    FROM song s
+                    WHERE s.localPath = album.thumbnailUrl 
+                        AND s.inLibrary IS NOT NULL
                     LIMIT 1),
-                   (SELECT MIN(s.localPath) FROM song_album_map m JOIN song s ON s.id = m.songId
-                    WHERE m.albumId = album.id AND s.inLibrary IS NOT NULL AND s.localPath IS NOT NULL)
+                   (SELECT MIN(s.localPath) 
+                    FROM song_album_map m 
+                    INNER JOIN song s ON s.id = m.songId
+                    WHERE m.albumId = album.id 
+                        AND s.inLibrary IS NOT NULL 
+                        AND s.localPath IS NOT NULL)
                ) AS thumbnailUrl
         FROM album
         WHERE album.id IN (
             SELECT song_album_map.albumId
             FROM song_artist_map
-                JOIN song ON song_artist_map.songId = song.id
-                JOIN song_album_map ON song_album_map.songId = song.id
+                INNER JOIN song ON song_artist_map.songId = song.id
+                INNER JOIN song_album_map ON song_album_map.songId = song.id
             WHERE song_artist_map.artistId = :artistId
                 AND song.inLibrary IS NOT NULL
         )
@@ -270,7 +336,9 @@ interface AlbumsDao : ArtistsDao {
     fun artistAlbumThumbnails(artistId: String): Flow<List<AlbumThumbnail>>
 
     @Transaction
-    @RawQuery(observedEntities = [AlbumEntity::class])
+    @RawQuery(
+        observedEntities = [AlbumEntity::class, SongAlbumMap::class, SongEntity::class, AlbumArtistMap::class, ArtistEntity::class]
+    )
     fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
 
     fun albums(filter: AlbumFilter, sortType: AlbumSortType, descending: Boolean, localOnly: Boolean? = null): Flow<List<Album>> {
@@ -341,7 +409,7 @@ interface AlbumsDao : ArtistsDao {
               WHERE timestamp < (:now - 86400000 * 30 * 1)
               GROUP BY n.songId
               ORDER BY oldPlayTime) AS t
-                 JOIN song on song.id = t.eid
+                 INNER JOIN song on song.id = t.eid
         WHERE 0.2 * t.oldPlayTime > t.newPlayTime
         LIMIT 100
     """
@@ -352,7 +420,7 @@ interface AlbumsDao : ArtistsDao {
         """
         SELECT song.*
         FROM event
-                 JOIN
+                 INNER JOIN
              song ON event.songId = song.id
         WHERE event.timestamp > (:now - 86400000 * 7 * 2)
         GROUP BY song.albumId

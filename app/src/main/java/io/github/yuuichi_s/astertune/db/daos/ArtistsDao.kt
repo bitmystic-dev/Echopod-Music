@@ -10,6 +10,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
+import com.zionhuang.innertube.pages.ArtistPage
 import io.github.yuuichi_s.astertune.constants.ArtistFilter
 import io.github.yuuichi_s.astertune.constants.ArtistSongSortType
 import io.github.yuuichi_s.astertune.constants.ArtistSortType
@@ -18,9 +19,9 @@ import io.github.yuuichi_s.astertune.db.entities.ArtistEntity
 import io.github.yuuichi_s.astertune.db.entities.LocalArtistThumbnail
 import io.github.yuuichi_s.astertune.db.entities.Song
 import io.github.yuuichi_s.astertune.db.entities.SongArtistMap
+import io.github.yuuichi_s.astertune.db.entities.SongEntity
 import io.github.yuuichi_s.astertune.extensions.reversed
 import io.github.yuuichi_s.astertune.ui.utils.resize
-import com.zionhuang.innertube.pages.ArtistPage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
@@ -138,7 +139,7 @@ interface ArtistsDao {
     """)
     fun mostPlayedArtists(fromYear: Int, fromMonth: Int, limit: Int = 6): Flow<List<Artist>>
 
-    @RawQuery(observedEntities = [ArtistEntity::class])
+    @RawQuery(observedEntities = [ArtistEntity::class, SongArtistMap::class, SongEntity::class])
     fun _getArtists(query: SupportSQLiteQuery): Flow<List<Artist>>
 
     fun artists(filter: ArtistFilter, sortType: ArtistSortType, descending: Boolean, localOnly: Boolean? = null): Flow<List<Artist>> {
@@ -191,8 +192,9 @@ interface ArtistsDao {
     fun artistsLocalBookmarkedAsc() = artists(ArtistFilter.LIKED, ArtistSortType.CREATE_DATE, false, true)
 
     /**
-     * Representative artwork path for each local artist, preferring a local album cover and falling
-     * back to a local song's embedded artwork. MIN() keeps the choice stable across rescans.
+     * Representative artwork path for each local artist from its library songs, preferring a local
+     * album cover and falling back to a song's embedded artwork. MIN() keeps the choice stable
+     * across rescans.
      */
     @Query("""
         SELECT sam.artistId AS artistId,
@@ -201,9 +203,10 @@ interface ArtistsDao {
                    MIN(CASE WHEN song.isLocal = 1 THEN song.thumbnailUrl END)
                ) AS thumbnailUrl
         FROM song_artist_map sam
-            JOIN song ON sam.songId = song.id
+            INNER JOIN song ON sam.songId = song.id
             LEFT JOIN album ON song.albumId = album.id
         WHERE song.isLocal = 1
+            AND song.inLibrary IS NOT NULL
         GROUP BY sam.artistId
     """)
     fun localArtistThumbnails(): Flow<List<LocalArtistThumbnail>>
