@@ -10,7 +10,7 @@
     </plurals>
     <string name="history">历史</string>
     <string name="stats">统计</string>
-    <string name="mood_and_genres">曲调和流派</string>
+    <string name="mood_and_genres">心情和流派</string>
     <string name="account">账号</string>
     <string name="quick_picks">根据收听记录推荐</string>
     <string name="new_release_albums">新专辑</string>
@@ -78,7 +78,7 @@
     <string name="sort_by_custom">自定义顺序</string>
     <string name="media_id">媒体 ID</string>
     <string name="mime_type">MIME 类型</string>
-    <string name="codecs">编码</string>
+    <string name="codecs">编解码器</string>
     <string name="bitrate">比特率</string>
     <string name="sample_rate">采样率</string>
     <string name="loudness">响度</string>
@@ -186,9 +186,9 @@
     <string name="max_cache_size">最大缓存大小</string>
     <string name="unlimited">无限制</string>
     <string name="clear_all_downloads">清除所有下载</string>
-    <string name="max_image_cache_size">图像缓存大小</string>
+    <string name="max_image_cache_size">图像缓存大小上限</string>
     <string name="clear_image_cache">清除图像缓存</string>
-    <string name="max_song_cache_size">歌曲缓存大小</string>
+    <string name="max_song_cache_size">歌曲缓存大小上限</string>
     <string name="clear_song_cache">清除歌曲缓存</string>
     <string name="size_used">已使用 %s</string>
     <string name="privacy">隐私</string>
@@ -270,4 +270,16 @@
     <string name="use_login_for_browse_desc">这可能会影响您看到的内容，例如，如果您使用会员账号登录，则会显示仅会员专辑</string>
     <string name="use_login_for_browse">登录账号浏览内容</string>
     <string name="action_login">登录</string>
+    <string name="duration_hours_minutes">%1$d 小时 %2$d 分钟</string>
+    <string name="duration_minutes">%d 分钟</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">自动（最新专辑）</string>
+    <string name="custom_accent_color">自定义强调色</string>
+    <string name="custom_accent_color_description">选择一种固定颜色作为整个应用的强调色</string>
+    <string name="accent_color">强调色</string>
+    <string name="minimize_player">最小化播放器</string>
+    <string name="ignore_audio_focus">保持音频焦点</string>
+    <string name="ignore_audio_focus_desc">当其他应用获取音频焦点时继续播放。音乐不会因其他音源（包括来电）而暂停。</string>
+    <string name="enable_betterlyrics">使用 BetterLyrics 提供歌词</string>
+    <string name="enable_simpmusic">使用 SimpMusic 提供歌词</string>
 </resources>
