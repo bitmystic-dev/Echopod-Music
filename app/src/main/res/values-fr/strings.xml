@@ -52,7 +52,7 @@
     <string name="start_radio">Démarrer la radio</string>
     <string name="play">Lecture</string>
     <string name="play_all">Tout lire</string>
-    <string name="play_next">Suivant</string>
+    <string name="play_next">Lire ensuite</string>
     <string name="add_to_queue">Ajouter à la file d\'attente</string>
     <string name="add_to_library">Ajouter à la bibliothèque</string>
     <string name="remove_from_library">Supprimer de la bibliothèque</string>
@@ -153,7 +153,7 @@
     </plurals>
     <string name="error_no_stream">Aucun flux disponible</string>
     <string name="error_no_internet">Aucune connexion réseau</string>
-    <string name="error_timeout">Temps libre</string>
+    <string name="error_timeout">Délai d\'attente dépassé</string>
     <string name="error_unknown">Erreur inconnue</string>
     <string name="action_like">J’aime</string>
     <string name="action_remove_like">Je n’aime plus</string>
@@ -173,8 +173,8 @@
     <string name="dark_theme_off">Désactivé</string>
     <string name="dark_theme_follow_system">Suivre le système</string>
     <string name="pure_black">Noir profond</string>
-    <string name="default_open_tab">Menu ouvert par défaut</string>
-    <string name="customize_navigation_tabs">Personnaliser les menus de navigation</string>
+    <string name="default_open_tab">Onglet ouvert par défaut</string>
+    <string name="customize_navigation_tabs">Personnaliser les onglets de navigation</string>
     <string name="lyrics_text_position">Position du texte des paroles</string>
     <string name="left">Gauche</string>
     <string name="center">Centre</string>
@@ -252,7 +252,7 @@
     <string name="disable_screenshot">Désactiver les captures d\'écran</string>
     <string name="search_history">Historique de recherche</string>
     <string name="disable_screenshot_desc">Lorsque cette option est activée, les captures d\'écran et l\'affichage de l\'application dans Récents sont désactivés.</string>
-    <string name="stop_music_on_task_clear">Arrêter la musique en fermant la page</string>
+    <string name="stop_music_on_task_clear">Arrêter la musique en retirant l\'application des applications récentes</string>
     <string name="forgotten_favorites">Favoris oubliés</string>
     <string name="keep_listening">Continuez d\'écouter</string>
     <string name="similar_to">Similaire à</string>
@@ -295,4 +295,9 @@
     <string name="ignore_audio_focus_desc">Continuer la lecture lorsqu\'une autre application prend le focus audio. La musique ne sera pas mise en pause par d\'autres sources audio, y compris les appels téléphoniques.</string>
     <string name="enable_betterlyrics">Activer le fournisseur de paroles BetterLyrics</string>
     <string name="enable_simpmusic">Activer le fournisseur de paroles SimpMusic</string>
+    <string name="duration_hours_minutes">%1$d h %2$d min</string>
+    <string name="duration_minutes">%d min</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Automatique (album le plus récent)</string>
+    <string name="minimize_player">Réduire le lecteur</string>
 </resources>
