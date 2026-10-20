@@ -6,6 +6,7 @@
     <string name="select">Mode de sélection</string>
     <string name="library">Bibliothèque</string>
     <string name="song_added_to_queue">\"%s\" inséré dans la file d\'attente</string>
+    <string name="song_playing_in_new_queue">\"%s\" en cours de lecture dans une nouvelle file d\'attente</string>
     <string name="queue_searched_songs_ot">Recherche :</string>
     <string name="sort_by_date_released">Date de sortie</string>
     <string name="local_history">Locale</string>
@@ -136,14 +137,14 @@
     <string name="action_cancel">Annuler</string>
     <string name="queues_empty">Pas de files d\'attente</string>
     <string name="queues_title">Files d\'attente</string>
-    <string name="pause_remote_listen_history">Partager l\'historique d\'écoute avec YouTube Music</string>
+    <string name="pause_remote_listen_history">Suspendre le partage de l\'historique d\'écoute avec YouTube Music</string>
     <string name="swipe_to_skip_title">Balayer horizontalement pour changer de titre</string>
     <string name="swipe_to_skip_description">Activer le balayage horizontal dans le lecteur pour changer de titre</string>
     <string name="filter_arrangement">Organiser les filtres</string>
     <string name="restart_to_apply_changes">Redémarrez l\'application afin que les modifications prennent effet</string>
     <string name="android_auto">Android Auto</string>
     <string name="missing_media_permission_warning">Des autorisations de stockage sont requises pour les médias locaux. Cliquez pour accorder l\'autorisation.</string>
-    <string name="more_settings">Paramètres Avancés</string>
+    <string name="more_settings">Plus de paramètres</string>
     <string name="grp_account_sync">Compte et Synchronisation</string>
     <string name="sync_conflict_overwrite">Remplacer le contenu local par du contenu distant</string>
     <string name="sync_conflict_title">Résolution des conflits</string>
@@ -239,7 +240,7 @@
     <string name="file_path">Chemin du fichier</string>
     <string name="track_number">Numéro de piste</string>
     <string name="ffmpeg_lgpl">Ce logiciel utilise les bibliothèques du projet FFmpeg sous la licence LGPLv2.1</string>
-    <string name="seek_increment">Rechercher une augmentation</string>
+    <string name="seek_increment">Intervalle d\'avance/retour rapide</string>
     <plurals name="second">
         <item quantity="one">%d seconde</item>
         <item quantity="many">%d secondes</item>

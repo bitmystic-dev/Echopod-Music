@@ -235,7 +235,6 @@
     <string name="duplicates_description_single">Skladba se již nachází ve vašem playlistu</string>
     <string name="keep_listening">Poslouchejte dál</string>
     <string name="duplicates">Duplikáty</string>
-    <string name="sided">Na straně</string>
     <string name="big">Velké</string>
     <string name="disable_screenshot_desc">Po zapnutí budou zakázány snímky obrazovky a náhled aplikace v Nedávných.</string>
     <string name="library_song_empty">Zde se zobrazí skladby v knihovně</string>
@@ -281,7 +280,6 @@
     <string name="delete_playlist_confirm">Opravdu chcete odstranit playlist „%s“?</string>
     <string name="default_">Výchozí</string>
     <string name="theme">Motiv</string>
-    <string name="player_text_alignment">Zarovnání textu přehrávače</string>
     <string name="discord_information">AsterTune používá knihovnu KizzyRPC, aby mohl nastavit váš stav na Discordu. Tato funkce zahrnuje připojení k bráně Discord, což může být považováno za porušení podmínek společnosti Discord. Neexistují nicméně žádné známé případy uzamčení účtu z tohoto důvodu. Používejte na vlastní nebezpečí. \n \nAsterTune pouze extrahuje váš token, vše ostatní je uloženo lokálně.</string>
     <string name="enable_discord_rpc">Povolit stav na Discordu</string>
     <string name="action_logout">Odhlásit se</string>

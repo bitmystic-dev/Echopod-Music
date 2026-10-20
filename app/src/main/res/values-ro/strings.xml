@@ -197,7 +197,6 @@
     <string name="pure_black">Negru pur</string>
     <string name="customize_navigation_tabs">Personalizează filele de navigare</string>
     <string name="player">Player</string>
-    <string name="player_text_alignment">Alinierea textului din player</string>
     <string name="lyrics_text_position">Poziția textului versurilor</string>
     <string name="left">Stânga</string>
     <string name="center">Centru</string>
@@ -286,6 +285,5 @@
     <string name="clear_translation_models">Elimină modelele de traducere</string>
     <string name="squiggly">Ondulat</string>
     <string name="refetch">Reîncarcă</string>
-    <string name="sided">Într-o parte</string>
     <string name="remove_download_playlist_confirm">Sigur vrei să ștergi toate cele %s (de) melodii din playlist din Melodii descărcate?</string>
 </resources>

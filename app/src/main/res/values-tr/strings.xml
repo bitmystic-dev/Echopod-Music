@@ -7,7 +7,7 @@
     <string name="playlists">Çalma Listeleri</string>
     <plurals name="n_selected">
         <item quantity="one">%d seçildi</item>
-        <item quantity="other">%d seçililer</item>
+        <item quantity="other">%d seçildi</item>
     </plurals>
     <string name="history">Geçmiş</string>
     <string name="stats">İstatistikler</string>
@@ -51,7 +51,7 @@
     <string name="start_radio">Radyo başlat</string>
     <string name="play">Çal</string>
     <string name="play_all">Tümünü çal</string>
-    <string name="play_next">Bir sonra çal</string>
+    <string name="play_next">Sıradaki olarak çal</string>
     <string name="add_to_queue">Sıraya ekle</string>
     <string name="add_to_library">Kütüphaneye ekle</string>
     <string name="remove_from_library">Kütüphaneden kaldır</string>
@@ -105,31 +105,31 @@
     <string name="error_artist_name_empty">Sanatçı adı boş olamaz.</string>
     <plurals name="n_song">
         <item quantity="one">%d şarkı</item>
-        <item quantity="other">%d şarkılar</item>
+        <item quantity="other">%d şarkı</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="one">%d sanatçı</item>
-        <item quantity="other">%d sanatçılar</item>
+        <item quantity="other">%d sanatçı</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d albüm</item>
-        <item quantity="other">%d albümler</item>
+        <item quantity="other">%d albüm</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="one">%d çalma listesi</item>
-        <item quantity="other">%d çalma listeleri</item>
+        <item quantity="other">%d çalma listesi</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="one">%d hafta</item>
-        <item quantity="other">%d haftalar</item>
+        <item quantity="other">%d hafta</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="one">%d ay</item>
-        <item quantity="other">%d aylar</item>
+        <item quantity="other">%d ay</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="one">%d yıl</item>
-        <item quantity="other">%d yıllar</item>
+        <item quantity="other">%d yıl</item>
     </plurals>
     <string name="playlist_imported">Çalma listesi içe aktarıldı</string>
     <string name="removed_song_from_playlist">\"%s\" çalma listesinden kaldırıldı</string>
@@ -173,7 +173,7 @@
     <string name="content">İçerik</string>
     <string name="login">Oturum aç</string>
     <string name="content_language">Varsayılan içerik dili</string>
-    <string name="content_country">Varsayılan ülke içeriği</string>
+    <string name="content_country">Varsayılan içerik ülkesi</string>
     <string name="system_default">Sistem varsayılanı</string>
     <string name="enable_proxy">Proxy\'yi etkinleştir</string>
     <string name="proxy_type">Proxy türü</string>
@@ -238,7 +238,6 @@
     <string name="duplicates_description_single">Şarkı zaten çalma listenizde var</string>
     <string name="your_youtube_playlists">YouTube çalma listeleriniz</string>
     <string name="remove_from_playlist">Çalma listesinden kaldır</string>
-    <string name="player_text_alignment">Oynatıcı metin hizalaması</string>
     <string name="player_slider_style">Oynatıcı kaydırma biçimi</string>
     <string name="queue">Sıra</string>
     <string name="persistent_queue_desc">Uygulama başladığında son şarkı sırasını geri getirir</string>
@@ -252,7 +251,7 @@
     <string name="library_album_empty">Kütüphane albümleri burada görünecektir</string>
     <string name="library_playlist_empty">Çalma listeleriniz burada görünecektir</string>
     <string name="other_versions">Diğer versiyonlar</string>
-    <string name="remove_download_playlist_confirm">İndirilen şarkılar deposundaki \"%s\" şarkının hepsini silmek istiyor musunuz?</string>
+    <string name="remove_download_playlist_confirm">\"%s\" çalma listesindeki tüm şarkıları İndirilen şarkılar deposundan kaldırmak istiyor musunuz?</string>
     <string name="delete_playlist_confirm">\"%s\" çalma listesini silmek istiyor musunuz?</string>
     <string name="add_all_to_library">Hepsini kütüphaneye ekle</string>
     <string name="tempo_and_pitch">Tempo ve Perde</string>
@@ -261,7 +260,6 @@
     <string name="duplicates_description_multiple">%d şarkı zaten çalma listenizde</string>
     <string name="action_like_all">Hepsini beğen</string>
     <string name="action_remove_like_all">Tüm beğenileri kaldır</string>
-    <string name="sided">Kenarlı</string>
     <string name="default_">Varsayılan</string>
     <string name="squiggly">Dalgalı</string>
     <string name="misc">Çeşitli</string>
@@ -276,7 +274,19 @@
     <string name="discord_information">AsterTune, Discord hesabınızın durumunu ayarlamak için KizzyRPC kütüphanesini kullanır. Bu, Discord\'un Hizmet Şartları\'nın ihlali olarak kabul edilebilecek Discord Geçit bağlantısının kullanılmasını gerektirir. Fakat kullanıcı hesaplarının bu nedenle askıya alındığı bilinen bir örnek yoktur. Riski size ait olmak üzere kullanın. \n \nAsterTune yalnızca belirtecinizi çıkarır ve diğer her şey yerel olarak saklanır.</string>
     <string name="action_logout">Oturumu kapat</string>
     <string name="enable_discord_rpc">Rich Presence\'ı etkinleştir</string>
-    <string name="use_login_for_browse">İçerikleri görmek için Giriş yap\'ı kullanın</string>
+    <string name="use_login_for_browse">İçeriğe göz atmak için hesabı kullan</string>
     <string name="use_login_for_browse_desc">Bu gördüğünüz içerikleri etkileyebilir ve örnek olarak Premium\'a özel içerikleri Premium\'a sahip bir hesapla giriş yaptıysanız size sunabilir</string>
     <string name="action_login">Giriş Yap</string>
+    <string name="duration_hours_minutes">%1$d sa %2$d dk</string>
+    <string name="duration_minutes">%d dk</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Otomatik (en yeni albüm)</string>
+    <string name="minimize_player">Oynatıcıyı küçült</string>
+    <string name="custom_accent_color">Özel vurgu rengi</string>
+    <string name="custom_accent_color_description">Uygulama genelinde vurgu rengi olarak seçtiğiniz sabit bir rengi kullanın</string>
+    <string name="accent_color">Vurgu rengi</string>
+    <string name="enable_betterlyrics">BetterLyrics şarkı sözü sağlayıcısını etkinleştir</string>
+    <string name="enable_simpmusic">SimpMusic şarkı sözü sağlayıcısını etkinleştir</string>
+    <string name="ignore_audio_focus">Ses odağını koru</string>
+    <string name="ignore_audio_focus_desc">Başka bir uygulama ses odağını aldığında çalmaya devam et. Telefon aramaları dahil diğer ses kaynakları için müzik duraklatılmaz.</string>
 </resources>

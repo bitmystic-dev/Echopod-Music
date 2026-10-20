@@ -152,8 +152,6 @@
     <string name="duplicates_description_multiple">%d പാട്ടുകള്‍ നിങ്ങളുടെ പ്ലേലിസ്റ്റിൽ ഇതിനകം ഉണ്ട്</string>
     <string name="action_like_all">എല്ലാം like ചെയ്യുക</string>
     <string name="theme">തീം</string>
-    <string name="player_text_alignment">പ്ലെയർ ടെക്സ്റ്റ് വിന്യാസം</string>
-    <string name="sided">വശത്തേക്ക്</string>
     <string name="player_slider_style">പ്ലെയർ സ്ലൈഡർ ശൈലി</string>
     <string name="squiggly">ഞെരുങ്ങി</string>
     <string name="misc">പലവക</string>

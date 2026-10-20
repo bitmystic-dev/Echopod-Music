@@ -186,9 +186,7 @@
     <string name="pure_black">Καθαρό μαύρο</string>
     <string name="customize_navigation_tabs">Προσαρμογή καρτελών πλοήγησης</string>
     <string name="player">Aναπαραγωγέας</string>
-    <string name="player_text_alignment">Ευθυγράμμιση κειμένου αναπαραγωγέα</string>
     <string name="lyrics_text_position">Θέση κειμένου στίχων</string>
-    <string name="sided">Πλευρά</string>
     <string name="left">Αριστερά</string>
     <string name="center">Κέντρο</string>
     <string name="right">Δεξιά</string>

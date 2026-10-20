@@ -201,9 +201,7 @@
     <string name="theme">கருப்பொருள்</string>
     <string name="enable_dynamic_theme">மாறும் கருப்பொருள் இயக்கவும்</string>
     <string name="pure_black">தூய கருப்பு</string>
-    <string name="player_text_alignment">பிளேயர் உரை சீரமைப்பு</string>
     <string name="lyrics_text_position">பாடல் உரை நிலை</string>
-    <string name="sided">பக்க</string>
     <string name="left">இடது</string>
     <string name="center">நடுவண்</string>
     <string name="right">வலது</string>

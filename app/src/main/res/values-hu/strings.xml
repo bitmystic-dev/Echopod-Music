@@ -245,8 +245,6 @@
     <string name="action_remove_like_all">Minden tetszés eltávolítása</string>
     <string name="theme">Téma</string>
     <string name="player">Lejátszó</string>
-    <string name="player_text_alignment">Lejátszó szöveg igazítás</string>
-    <string name="sided">Oldalra</string>
     <string name="player_slider_style">Lejátszó sáv stílus</string>
     <string name="default_">Alapbeállítás</string>
     <string name="squiggly">Hernyó</string>

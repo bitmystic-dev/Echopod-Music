@@ -245,8 +245,6 @@
     <string name="action_remove_like_all">সব লাইক মুছে ফেলুন</string>
     <string name="theme">থিম</string>
     <string name="player">প্লয়ার</string>
-    <string name="player_text_alignment">প্লেয়ার টেক্সট সারিবদ্ধকরণ</string>
-    <string name="sided">পাশযুক্ত</string>
     <string name="player_slider_style">প্লেয়ার স্লাইডার স্টাইল</string>
     <string name="default_">ডিফল্ট</string>
     <string name="squiggly">স্কুইগলি</string>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library">Biblioteca</string>
-    <string name="audio_offload_description">Usar o caminho de descarga de áudio para a reprodução. Ao ativar, o consumo de energia pode diminuir, mas pode levar a problemas com a reprodução ou pós-processamento. Essa configuração não tem efeito em codificadores ou dispositivos não suportados</string>
+    <string name="audio_offload_description">Usar o caminho de áudio offload para a reprodução. Ativar esta opção pode reduzir o consumo de energia, mas pode causar problemas na reprodução ou no pós-processamento. Essa configuração não tem efeito em codecs ou dispositivos não suportados</string>
     <string name="player_background_gradient">Gradiente</string>
     <string name="create_sync_playlist_description">Observação: Isto permite a sincronização com o YouTube Music. Isso NÃO pode ser alterado depois. Você não pode adicionar músicas locais em listas sincronizadas.</string>
     <string name="create_sync_playlist">Sincronizar Lista</string>
     <string name="player_background_default">Seguir o tema</string>
     <string name="lyrics_multiline_description">Tratar todas as linhas entre os pontos de sincronização como um só texto da letra</string>
     <string name="scan_paths_excl">Caminhos de busca ignorados</string>
-    <string name="audio_offload">Ativar descarga</string>
+    <string name="audio_offload">Ativar offload</string>
     <string name="scanner_strict_file_name_description">Quando ativado, os nomes de arquivo NÃO serão ignorados. Por exemplo, música.ogg será uma diferente de música.flac. A configuração de sensibilidade da busca ainda se aplica</string>
     <string name="lyrics_prefer_local_description">Priorizar arquivos de letra locais antes de usar os fornecidos pela nuvem. Desative isso para priorizar os fornecidos pela nuvem</string>
     <string name="local_library_enable_description">Desativar isto ocultará a biblioteca local do app</string>
@@ -45,7 +45,7 @@
     <string name="slim_navbar_description">Remover legendas para diminuir a altura da barra de navegação</string>
     <string name="tab_arrangement">Organizar abas</string>
     <string name="like_autodownload">Baixar suas músicas favoritas automaticamente</string>
-    <string name="grp_localization">Tradução</string>
+    <string name="grp_localization">Idioma e região</string>
     <string name="token_hidden">Toque para mostrar o token</string>
     <string name="token_shown">Toque novamente para copiar ou editar</string>
     <string name="ytm_sync">Sincronizar com a sua conta do YouTube Music automaticamente</string>
@@ -58,7 +58,7 @@
     <string name="grp_proxy">Proxy</string>
     <string name="lyrics_settings_title">Letra</string>
     <string name="lyrics_multiline_title">Ler letras multi-linhas</string>
-    <string name="lyrics_trim_title">Remover espaços entre letras</string>
+    <string name="lyrics_trim_title">Remover espaços nas extremidades das letras</string>
     <string name="lyrics_prefer_local">Preferir arquivos de letra locais</string>
     <string name="lyrics_font_Size">Tamanho da fonte</string>
     <string name="local_library_enable_title">Ativar mídia local</string>
@@ -77,7 +77,7 @@
     <string name="scanner_sensitivity_title">Configurar sensibilidade da busca</string>
     <string name="scanner_sensitivity_L1">Corresponder ao título</string>
     <string name="scanner_sensitivity_L2">Corresponder título e artistas</string>
-    <string name="scanner_online_artist_linking">Tentar sincronizar os artistas dos arquivos locais com os no YouTube Music</string>
+    <string name="scanner_online_artist_linking">Tentar vincular os artistas dos arquivos locais aos do YouTube Music</string>
     <string name="experimental_settings_title">Experimentais</string>
     <string name="dev_settings_title">Ativar configurações de desenvolvedor</string>
     <string name="dev_settings_description">Revela configurações avançadas adicionais utilizadas no desenvolvimento</string>
@@ -89,12 +89,12 @@
     <string name="info">Informação</string>
     <string name="recent_activity">Atividade recente</string>
     <string name="create_queue">Nova fila</string>
-    <string name="scanner_warning">Por padrão, a busca NÃO recarregará os metadados de músicas existentes, exceto que você especificar que quer isso. Dependendo no tamanho da sua biblioteca, isso pode demorar um pouco.</string>
+    <string name="scanner_warning">Por padrão, a busca NÃO recarregará os metadados de músicas existentes, a menos que você especifique o contrário acima. Dependendo do tamanho da sua biblioteca, isso pode demorar um pouco.</string>
     <string name="select">Modo de seleção</string>
     <string name="sort_by_play_count">Número de reproduções</string>
     <string name="scan_paths_tooltip">Todas as subpastas também serão afetadas</string>
     <string name="token_adv_login_description">Esse é um método AVANÇADO de conectar à sua conta. Como uma alternativa ao portal web, você pode digitar ou atualizar seu token de login diretamente aqui. Por exemplo, isso pode fazer com que se conectar em vários dispositivos seja mais rápido. Note que qualquer formato de token inválido qual o app não consegue entender não será aceitado</string>
-    <string name="min_playback_duration_description">A duração mínima que uma música deve ser tocada antes que seja considerada</string>
+    <string name="min_playback_duration_description">Tempo mínimo de reprodução para uma música ser considerada \"tocada\"</string>
     <string name="scan_paths_add_folder">Adicionar uma nova pasta</string>
     <string name="scanner_progress_scanning">Buscando…</string>
     <string name="tab_arrangement_disable_tip">--- Arraste abaixo disso para desativar ---</string>
@@ -160,11 +160,11 @@
     <string name="library_empty">Os conteúdos da sua biblioteca aparecerão aqui</string>
     <string name="grp_behavior">Comportamento</string>
     <string name="m3u_ytm_lookup">Pesquisar no YouTube Music por músicas ausentes no banco de dados do app</string>
-    <string name="tablet_ui_title_description">Force uma interface em modo paisagem otimizada para telas maiores. Essa configuração não tem efeito se os requisitos de largura mínimos não forem cumpridos</string>
+    <string name="tablet_ui_title_description">Forçar uma interface dividida otimizada para telas grandes. Essa configuração não tem efeito se os requisitos de largura mínima não forem cumpridos</string>
     <string name="tablet_ui_title">Forçar interface de tablet</string>
     <string name="oss_licenses_title">Licenças de código aberto</string>
     <string name="lyrics_karaoke_description">Ativa a sincronização de palavra por palavra. Requer suporte pelo formato da letra.</string>
-    <string name="lyrics_karaoke_hz_title">Ajustar velocidade de recarregamento da letra de karaoke</string>
+    <string name="lyrics_karaoke_hz_title">Ajustar velocidade de atualização da letra de karaokê</string>
     <string name="import_success_songs">Importadas com sucesso</string>
     <string name="m3u_export">Exportar como um arquivo M3U</string>
     <string name="speed_very_slow">Muito lento</string>
@@ -177,10 +177,10 @@
     <string name="scanner_rejected_dir">Seleção inválida. A pasta de busca não pode ser uma subpasta da pasta de downloads, ou ser a própria pasta de downloads</string>
     <string name="scanner_progress_discovering">Descobrindo…</string>
     <string name="scanner_progress_processing">Processando…</string>
-    <string name="dl_rescan_confirm">Buscar todas as pastas de downloads agora? Isso pode demorar alguns minutos dependendo do tamanho da sua biblioteca.</string>
+    <string name="dl_rescan_confirm">Buscar novamente em todas as pastas de downloads agora? Isso pode demorar alguns minutos dependendo do tamanho da sua biblioteca.</string>
     <string name="dl_extra_path_description">Músicas nestas pastas só aparecerão no app se você tocou elas antes ou adicionou elas em uma lista</string>
     <string name="dl_migrate_title">Migrar downloads para armazenamento externo…</string>
-    <string name="dl_rescan_title">Buscar pastas de downloads…</string>
+    <string name="dl_rescan_title">Buscar novamente nas pastas de downloads…</string>
     <string name="dl_main_path_title">Configurar pasta externa de downloads…</string>
     <string name="dl_extra_path_title">Configurar locais de importação extras…</string>
     <string name="dl_migrate_confirm">Isto migrará TODOS os downloads internos para \"%s\", e essa ação não poderá ser desfeita. Continuar?</string>
@@ -189,17 +189,17 @@
     <string name="scan_paths_description">Selecione pastas no seu armazenamento local para buscar músicas</string>
     <string name="dl_main_path_description">Selecionar local de armazenamento dos downloads</string>
     <string name="oobe_ad_free_exp_description">Aproveite uma reprodução de música sem interrupções</string>
-    <string name="oobe_local_music_support">Suporte amplo à músicas locais</string>
+    <string name="oobe_local_music_support">Amplo suporte a músicas locais</string>
     <string name="oobe_cross_platform_sync">Sincronização entre plataformas</string>
     <string name="oobe_ytm_logon_subtitle">Conecte-se à sua conta do YouTube Music para sincronizar e acessar conteúdo privado da conta. Isso é opcional.</string>
     <string name="oobe_downloads_subtitle">Selecione uma pasta na qual as músicas baixadas serão salvas.</string>
     <string name="oobe_complete_title">Está tudo pronto!</string>
-    <string name="disable_lm_confirm">Ten certeza que quer desativar todos os recursos de mídia local? Os conteúdos da sua biblioteca não serão afetados.</string>
+    <string name="disable_lm_confirm">Tem certeza que quer desativar todos os recursos de mídia local? Os conteúdos da sua biblioteca não serão afetados.</string>
     <string name="oobe_local_media_title">Mídia local</string>
     <string name="oobe_cross_platform_sync_description">Mantenha sua música em harmonia entre dispositivos</string>
     <string name="oobe_ad_free_exp">Sem anúncios do YouTube</string>
-    <string name="oobe_local_media_subtitle">Selecione as pastas que contém suas músicas. Iremos buscar músicas nelas para importar.</string>
-    <string name="clear_downloads_confirm">Tem certeza que quer remover todos os downloads? Somente downloads na pasta principal de downloads principal serão removidos.</string>
+    <string name="oobe_local_media_subtitle">Selecione as pastas que contêm suas músicas. Iremos buscar músicas nelas para importar.</string>
+    <string name="clear_downloads_confirm">Tem certeza que quer remover todos os downloads? Somente os downloads na pasta principal de downloads serão removidos.</string>
     <string name="clear_image_cache_confirm">Tem certeza que quer limpar o cache de imagens? Todas as capas de álbuns serão removidas.</string>
     <string name="clear_song_cache_confirm">Tem certeza que quer limpar a cache de músicas?</string>
     <string name="dl_oobe_tooltip">As músicas são baixadas para o armazenamento interno do app. Para baixar músicas para o armazenamento externo, você precisa selecionar uma pasta primeiro. Você pode adicionar, alterar, e remover pastas, ou migrar os downloads internos para downloads externos mais tarde nas configurações.</string>
@@ -211,7 +211,7 @@
     <string name="oobe_downloads_title">Downloads de músicas</string>
     <string name="dl_size_used_cache">Interno: %s usados</string>
     <string name="dl_size_used_extra">Importados extra: %s usados</string>
-    <string name="dl_storage_tooltip">Os downloads internos são salvos no armazenamento privado do app, e não são acessíveis sem root.\n\nOs downloads externos são salvos no armazenamento externo do seu dispositivo (ex: /sdcard ou em cartões micro SD) e podem serem acessados e editados diretamente com um explorador de arquivos. Para a pasta de downloads externos, recomendamos selecionar uma pasta vazia especificamente para baixar músicas, já que o AsterTune pode modificar ou apagar arquivos nesta pasta.\n\nPastas de importações extra são somente de leitura, e são usadas para carregar músicas adicionais. O AsterTune nunca alterará ou apagará arquivos nestas pastas. Pode selecionar uma dessas pastas na seção avançada.\n\nAo apagar downloads, somente as músicas internas serão apagadas. Os downloads externos e as importações extra devem serem apagados manualmente, ou pelo menu da música ou manualmente usando um explorador de arquivos.\n\nPastas de busca de downloads: Downloads de músicas externos e importações extra NÃO são atualizados automaticamente. Se você adicionar, remover, ou alterar arquivos manualmente usando um explorador de arquivos, você precisará buscar as pastas de downloads novamente para atualizar o banco de dados do app. Esta opção está disponível na seção avançada.</string>
+    <string name="dl_storage_tooltip">Os downloads internos são salvos no armazenamento privado do app e não são acessíveis sem root.\n\nOs downloads externos são salvos no armazenamento externo do seu dispositivo (ex.: /sdcard ou cartões micro SD) e podem ser acessados ou editados diretamente com um explorador de arquivos. Para os downloads externos, recomendamos selecionar uma pasta vazia exclusiva para baixar músicas, pois o AsterTune pode modificar ou apagar arquivos nessa pasta.\n\nAs pastas de importação extra são somente de leitura e são usadas para carregar músicas adicionais. O AsterTune nunca alterará ou apagará arquivos nessas pastas. Você pode selecionar essas pastas na seção avançada.\n\nAo limpar os downloads, somente as músicas internas são apagadas. As músicas dos downloads externos e das importações extra devem ser removidas manualmente, pelo menu da música ou por um explorador de arquivos.\n\nBuscar novamente nas pastas de downloads: as músicas nas pastas de downloads externos e de importação extra NÃO são atualizadas automaticamente. Se você adicionar, remover ou alterar arquivos manualmente usando um explorador de arquivos, talvez precise buscar novamente nas pastas de downloads para atualizar o banco de dados do app. Essa opção está disponível na seção avançada.</string>
     <string name="dl_calculate_size">Toque para calcular o tamanho dos downloads</string>
     <string name="dl_size_used_main">Externo: %s usados</string>
     <string name="scanner_sensitivity_L0">Usar o primeiro resultado fornecido pelo YouTube quando a pesquisa no YouTube está ativada, caso contrário corresponder o título</string>
@@ -238,7 +238,7 @@
     <string name="extra_details">Detalhes extras</string>
     <string name="file_path">Caminho do arquivo</string>
     <string name="track_number">Número da faixa</string>
-    <string name="ffmpeg_lgpl">Este software usa bibliotecas do projeto do projeto FFmpeg sob a licença LGPLv2.1</string>
+    <string name="ffmpeg_lgpl">Este software usa bibliotecas do projeto FFmpeg sob a licença LGPLv2.1</string>
     <plurals name="second">
         <item quantity="one">%d segundo</item>
         <item quantity="many">%d de segundos</item>
@@ -246,7 +246,7 @@
     </plurals>
     <string name="seek_increment">Pulo do avançar/retroceder</string>
     <string name="library_filter">Filtro da biblioteca</string>
-    <string name="toggle_lyrics">Habilitar letra</string>
+    <string name="toggle_lyrics">Mostrar/ocultar letra</string>
     <string name="audio_decoder_ffmpeg_only">Priorizar decodificadores do FFmpeg</string>
     <string name="audio_decoder_preference">Decodificador de áudio</string>
     <string name="audio_decoder_system_only">Apenas decodificadores do sistema</string>
@@ -276,11 +276,11 @@
     <string name="sleep_timer_fade">Atenuação</string>
     <string name="sleep_timer_fade_duration">Duração da atenuação</string>
     <string name="sleep_timer_fade_duration_desc">Segundos para abaixar o volume antes de parar</string>
-    <string name="sleep_timer_default_time">Tempo padrão para desligar</string>
+    <string name="sleep_timer_default_time">Duração padrão do temporizador</string>
     <string name="sleep_timer_minutes_short">%d min</string>
     <string name="sleep_timer_second_unit">s</string>
     <string name="sleep_timer_stop">Desativar temporizador</string>
-    <string name="sleep_timer_show_on_player">Temporizador</string>
+    <string name="sleep_timer_show_on_player">Botão na tela do reprodutor</string>
     <string name="sleep_timer_show_on_player_desc">Mostrar botão do temporizador na tela do reprodutor</string>
     <string name="lyrics_prefetch_title">Pré-carregar as letras das músicas</string>
     <string name="lyrics_prefetch_description">Procurar as letras das próximas músicas antecipadamente</string>
@@ -291,5 +291,6 @@
     <string name="download_on_wifi_only_description">Não baixar usando dados móveis. Músicas adicionadas na fila enquanto estiver nos dados móveis começam a baixar automaticamente assim que o Wi-Fi estiver disponível</string>
     <string name="download_waiting_for_wifi">Será baixado assim que conectado ao Wi-Fi</string>
     <string name="tap_artwork_to_show_lyrics_title">Toque na capa do álbum para mostrar as letras</string>
-    <string name="tap_artwork_to_show_lyrics_description">Mostre as letras quanto tocar na capa do álbum no player</string>
+    <string name="tap_artwork_to_show_lyrics_description">Mostrar as letras ao tocar na capa do álbum no reprodutor</string>
+    <string name="song_playing_in_new_queue">\"%s\" tocando em uma nova fila</string>
 </resources>

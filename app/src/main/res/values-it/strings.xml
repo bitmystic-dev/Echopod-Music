@@ -15,7 +15,7 @@
     <string name="mood_and_genres">Umori e generi</string>
     <string name="account">Account</string>
     <string name="quick_picks">In base ai tuoi ascolti</string>
-    <string name="new_release_albums">Nuovi album in uscita</string>
+    <string name="new_release_albums">Album appena pubblicati</string>
     <string name="today">Oggi</string>
     <string name="yesterday">Ieri</string>
     <string name="this_week">Questa settimana</string>
@@ -46,7 +46,7 @@
     <string name="retry">Riprova</string>
     <string name="radio">Radio</string>
     <string name="shuffle">Casuale</string>
-    <string name="reset">Ricomincia</string>
+    <string name="reset">Ripristina</string>
     <string name="details">Dettagli</string>
     <string name="edit">Modifica</string>
     <string name="start_radio">Avvia radio</string>
@@ -76,14 +76,14 @@
     <string name="sort_by_year">Anno</string>
     <string name="sort_by_song_count">Numero brani</string>
     <string name="sort_by_length">Durata</string>
-    <string name="sort_by_play_time">Numero di riproduzioni</string>
+    <string name="sort_by_play_time">Tempo di riproduzione</string>
     <string name="sort_by_custom">Ordine personalizzato</string>
     <string name="media_id">ID media</string>
     <string name="mime_type">Tipo MIME</string>
     <string name="codecs">Codec</string>
     <string name="bitrate">Bitrate</string>
     <string name="sample_rate">Frequenza di campionamento</string>
-    <string name="loudness">Rumorosità</string>
+    <string name="loudness">Sonorità</string>
     <string name="volume">Volume</string>
     <string name="file_size">Dimensioni</string>
     <string name="unknown">Sconosciuto</string>
@@ -116,7 +116,7 @@
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d album</item>
-        <item quantity="many">%d albums</item>
+        <item quantity="many">%d album</item>
         <item quantity="other">%d album</item>
     </plurals>
     <plurals name="n_playlist">
@@ -164,7 +164,7 @@
     <string name="repeat_mode_all">Ripeti coda</string>
     <string name="queue_all_songs">Tutti i brani</string>
     <string name="queue_searched_songs">Brani cercati</string>
-    <string name="music_player">Riproduttore</string>
+    <string name="music_player">Lettore musicale</string>
     <string name="settings">Impostazioni</string>
     <string name="appearance">Aspetto</string>
     <string name="enable_dynamic_theme">Abilita il tema dinamico</string>
@@ -175,9 +175,7 @@
     <string name="pure_black">Nero</string>
     <string name="default_open_tab">Scheda principale predefinita</string>
     <string name="customize_navigation_tabs">Personalizza le schede di navigazione</string>
-    <string name="player_text_alignment">Allineamento del testo del riproduttore</string>
     <string name="lyrics_text_position">Posizione del testo dei brani</string>
-    <string name="sided">Laterale</string>
     <string name="left">Sinistra</string>
     <string name="center">Centro</string>
     <string name="right">Destra</string>
@@ -190,7 +188,7 @@
     <string name="proxy_type">Tipologia del proxy</string>
     <string name="proxy_url">URL proxy</string>
     <string name="restart_to_take_effect">Riavvia l\'app per applicare le modifiche</string>
-    <string name="player_and_audio">Riproduttore e audio</string>
+    <string name="player_and_audio">Lettore e audio</string>
     <string name="audio_quality">Qualità dell\'audio</string>
     <string name="audio_quality_auto">Automatica</string>
     <string name="audio_quality_high">Alta</string>
@@ -236,16 +234,16 @@
     <string name="library_album_empty">Gli album della libreria verranno visualizzati qui</string>
     <string name="library_playlist_empty">Le tue playlist verranno visualizzate qui</string>
     <string name="remove_from_queue">Rimuovi dalla coda</string>
-    <string name="player_slider_style">Stile slider del player</string>
+    <string name="player_slider_style">Stile del cursore del lettore</string>
     <string name="keep_listening">Continua ad ascoltare</string>
     <string name="your_youtube_playlists">Le tue playlist di YouTube</string>
-    <string name="duplicates_description_multiple">La canzone %d è già nella tua playlist</string>
+    <string name="duplicates_description_multiple">%d brani sono già nella tua playlist</string>
     <string name="duplicates_description_single">La canzone è già nella tua playlist</string>
     <string name="delete_playlist_confirm">Vuoi davvero rimuovere la playlist %s?</string>
     <string name="library_song_empty">I brani della libreria verranno visualizzati qui</string>
     <string name="remove_all_from_library">Rimuovi tutto da libreria</string>
     <string name="duplicates">Duplicati</string>
-    <string name="default_">Default</string>
+    <string name="default_">Predefinito</string>
     <string name="other_versions">Altre versioni</string>
     <string name="tempo_and_pitch">Tempo e Tono</string>
     <string name="add_all_to_library">Aggiungi tutto a libreria</string>
@@ -268,7 +266,7 @@
     <string name="auto_load_more">Carica automaticamente più canzoni</string>
     <string name="auto_skip_next_on_error">Salta alla prossima canzone quando si verifica un errore</string>
     <string name="auto_load_more_desc">Aggiungi automaticamente canzoni quando si raggiunge la fine della coda, se possibile</string>
-    <string name="enable_lrclib">Attiva il fornitore di testi LcrLib</string>
+    <string name="enable_lrclib">Attiva il fornitore di testi LrcLib</string>
     <string name="grid_cell_size">Dimensione delle celle della griglia</string>
     <string name="auto_skip_next_on_error_desc">Garantisci la tua esperienza di riproduzione continua</string>
     <string name="stop_music_on_task_clear">Interrompi la musica quando l\'attività è interrotta</string>
@@ -295,4 +293,9 @@
     <string name="ignore_audio_focus_desc">Continua la riproduzione quando un\'altra app acquisisce il focus audio. La musica non verrà messa in pausa da altre sorgenti audio, incluse le chiamate.</string>
     <string name="enable_betterlyrics">Attiva il fornitore di testi BetterLyrics</string>
     <string name="enable_simpmusic">Attiva il fornitore di testi SimpMusic</string>
+    <string name="duration_hours_minutes">%1$dh %2$dmin</string>
+    <string name="duration_minutes">%dmin</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Automatica (album più recente)</string>
+    <string name="minimize_player">Riduci il lettore</string>
 </resources>

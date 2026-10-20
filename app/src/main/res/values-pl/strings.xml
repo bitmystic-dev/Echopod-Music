@@ -264,8 +264,6 @@
     <string name="other_versions">Inne wersje</string>
     <string name="duplicates_description_single">Utwór jest już obecny w Twojej playliście</string>
     <string name="action_remove_like_all">Usuń wszystkie polubienia</string>
-    <string name="player_text_alignment">Wyrównanie tekstu odtwarzacza</string>
-    <string name="sided">Z boku</string>
     <string name="squiggly">Falisty</string>
     <string name="forgotten_favorites">Zapomniane ulubione</string>
     <string name="keep_listening">Słuchaj dalej</string>

@@ -13,7 +13,6 @@
     <string name="action_remove_like">Ukloni sviđanje</string>
     <string name="action_remove_like_all">Ukloni sva sviđanja</string>
     <string name="center">Centar</string>
-    <string name="sided">Na strani</string>
     <string name="left">Lijevo</string>
     <string name="right">Desno</string>
     <string name="grid_cell_size">Veličina ćelija mreže</string>
@@ -158,7 +157,6 @@
     <string name="pure_black">Potpuno crna</string>
     <string name="customize_navigation_tabs">Prilagodi navigacijske kartice</string>
     <string name="player">Plejer</string>
-    <string name="player_text_alignment">Poravnanje teksta u plejeru</string>
     <string name="lyrics_text_position">Položaj teksta pjesama</string>
     <string name="player_slider_style">Stil klizača plejera</string>
     <string name="default_">Zadano</string>

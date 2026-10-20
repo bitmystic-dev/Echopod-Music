@@ -147,9 +147,7 @@
     <string name="pure_black">Õige must kujundus</string>
     <string name="customize_navigation_tabs">Kohenda vahekaarte</string>
     <string name="player">Muusikamängija</string>
-    <string name="player_text_alignment">Muusikamängija teksti joondumine</string>
     <string name="lyrics_text_position">Laulusõnade asukoht</string>
-    <string name="sided">Küljel</string>
     <string name="left">Vasakul</string>
     <string name="center">Keskel</string>
     <string name="right">Paremal</string>

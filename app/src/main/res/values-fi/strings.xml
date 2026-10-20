@@ -179,7 +179,6 @@
     <string name="action_remove_like_all">Poista kaikki tykkäykset</string>
     <string name="theme">Teema</string>
     <string name="player">Soitin</string>
-    <string name="sided">Sivulla</string>
     <string name="auto_load_more">Automaattisesti lataa lisää kappaleita</string>
     <string name="auto_load_more_desc">Automaattisesti lisää enemmän kappaleita, kun jonon loppu saavutetaan, jos mahdollista</string>
     <string name="auto_skip_next_on_error">Automaattisesti ohita seuraavaan kappaleeseen, kun tapahtuu virhe</string>
@@ -201,7 +200,6 @@
     <string name="add_anyway">Lisää silti</string>
     <string name="duplicates_description_single">Laulu on jo soittolistassasi</string>
     <string name="duplicates_description_multiple">%d kappaleet ovat jo soittolistassasi</string>
-    <string name="player_text_alignment">Soittimen tekstin tasaus</string>
     <string name="player_slider_style">Soittimen liukusäätimen tyyli</string>
     <string name="default_">Oletus</string>
     <string name="squiggly">Koukeroinen</string>

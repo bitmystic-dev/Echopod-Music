@@ -80,7 +80,7 @@
     <string name="sort_by_custom">Ordem customizada</string>
     <string name="media_id">ID da mídia</string>
     <string name="mime_type">Tipo do MIME</string>
-    <string name="codecs">Codificações</string>
+    <string name="codecs">Codecs</string>
     <string name="bitrate">Taxa de bits</string>
     <string name="sample_rate">Taxa de amostragem</string>
     <string name="loudness">Sonoridade</string>
@@ -164,7 +164,7 @@
     <string name="repeat_mode_all">Repetir fila</string>
     <string name="queue_all_songs">Todas as músicas</string>
     <string name="queue_searched_songs">Músicas pesquisadas</string>
-    <string name="music_player">Tocador de música</string>
+    <string name="music_player">Reprodutor de música</string>
     <string name="settings">Configurações</string>
     <string name="appearance">Aparência</string>
     <string name="enable_dynamic_theme">Ativar tema dinâmico</string>
@@ -188,7 +188,7 @@
     <string name="proxy_type">Tipo de proxy</string>
     <string name="proxy_url">URL da proxy</string>
     <string name="restart_to_take_effect">Reinicie para que tome efeito</string>
-    <string name="player_and_audio">Tocador e áudio</string>
+    <string name="player_and_audio">Reprodutor e áudio</string>
     <string name="audio_quality">Qualidade do áudio</string>
     <string name="audio_quality_auto">Automática</string>
     <string name="audio_quality_high">Alta</string>
@@ -245,12 +245,10 @@
     <string name="login_failed">Ocorreu algum problema ao conectar-se</string>
     <string name="action_logout">Desconectar-se</string>
     <string name="enable_discord_rpc">Ativar o Rich Presence</string>
-    <string name="not_logged_in">Não está conectado à uma conta</string>
+    <string name="not_logged_in">Não está conectado a uma conta</string>
     <string name="discord_information">O AsterTune usa a biblioteca KizzyRPC para definir o estado da sua conta do Discord. Isto envolve o uso da conexão do Discord Gateway, que pode ser considerado uma violação dos termos de serviço do Discord. Porém, não houve nenhum relato de usuários sendo banidos por esta razão. Use por sua própria conta e risco.\n\nO AsterTune extrairá somente o seu token, e todo o resto é armazenado localmente.</string>
-    <string name="sided">Ao lado</string>
     <string name="hide_explicit">Ocultar conteúdo explícito</string>
-    <string name="player_text_alignment">Alinhamento do texto do tocador</string>
-    <string name="player_slider_style">Estilo do controle deslizante do tocador</string>
+    <string name="player_slider_style">Estilo do controle deslizante do reprodutor</string>
     <string name="default_">Padrão</string>
     <string name="squiggly">Cobrinha</string>
     <string name="your_youtube_playlists">Suas listas do YouTube</string>
@@ -269,7 +267,7 @@
     <string name="add_all_to_library">Adicionar tudo à biblioteca</string>
     <string name="remove_from_queue">Remover da fila</string>
     <string name="tempo_and_pitch">Velocidade e Tonalidade</string>
-    <string name="player">Tocador</string>
+    <string name="player">Reprodutor</string>
     <string name="misc">Outros</string>
     <string name="small">Pequeno</string>
     <string name="big">Grande</string>
@@ -295,4 +293,9 @@
     <string name="ignore_audio_focus_desc">Continuar tocando quando perder o foco do áudio. A música não irá parar para outras fontes de áudio, incluindo ligações.</string>
     <string name="enable_betterlyrics">Ativar serviço BetterLyrics</string>
     <string name="enable_simpmusic">Ativar serviço SimpMusic</string>
+    <string name="duration_hours_minutes">%1$dh %2$dmin</string>
+    <string name="duration_minutes">%dmin</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Automática (álbum mais recente)</string>
+    <string name="minimize_player">Minimizar reprodutor</string>
 </resources>

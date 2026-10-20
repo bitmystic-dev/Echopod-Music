@@ -207,7 +207,6 @@
     <string name="settings">Настройки</string>
     <string name="action_restore">Възстановяване</string>
     <string name="player">Плейър</string>
-    <string name="player_text_alignment">Подравняване текста на плейъра</string>
     <string name="clear_search_history_confirm">Сигурни ли сте, че искате да изчистите цялата история на търсене?</string>
     <string name="song_cache">Кеш на песен</string>
     <string name="not_logged_in">Не сте влезли в</string>
@@ -230,7 +229,6 @@
     <string name="dark_theme_off">Изключено</string>
     <string name="dark_theme_follow_system">Следвай системата</string>
     <string name="left">Наляво</string>
-    <string name="sided">Странично</string>
     <string name="default_">По подразбиране</string>
     <string name="misc">Разни</string>
     <string name="default_open_tab">Отвори раздел по подразбиране</string>

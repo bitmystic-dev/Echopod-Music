@@ -10,7 +10,7 @@
     </plurals>
     <string name="history">Histórico</string>
     <string name="stats">Estatísticas</string>
-    <string name="mood_and_genres">Tom e Géneros</string>
+    <string name="mood_and_genres">Estados de espírito e géneros</string>
     <string name="account">Conta</string>
     <string name="quick_picks">Com base no que ouve</string>
     <string name="forgotten_favorites">Favoritas esquecidas</string>
@@ -65,7 +65,7 @@
     <string name="search_online">Pesquisar on-line</string>
     <string name="action_sync">Sincronizar</string>
     <string name="advanced">Avançadas</string>
-    <string name="tempo_and_pitch">Tempo e Nota Tónica</string>
+    <string name="tempo_and_pitch">Tempo e altura tonal</string>
     <string name="sort_by_create_date">Data de adição</string>
     <string name="sort_by_artist">Artista</string>
     <string name="sort_by_year">Ano</string>
@@ -75,7 +75,7 @@
     <string name="sort_by_custom">Ordem personalizada</string>
     <string name="media_id">Id. de multimédia</string>
     <string name="mime_type">Tipo MIME</string>
-    <string name="codecs">Codificadores</string>
+    <string name="codecs">Codecs</string>
     <string name="bitrate">Taxa de dados</string>
     <string name="sample_rate">Frequência</string>
     <string name="volume">Volume</string>
@@ -161,7 +161,7 @@
     </plurals>
     <string name="error_no_stream">Não existem fluxos</string>
     <string name="error_no_internet">Sem ligação de rede</string>
-    <string name="error_timeout">Caducidade</string>
+    <string name="error_timeout">Tempo de espera esgotado</string>
     <string name="error_unknown">Erro desconhecido</string>
     <string name="action_like">Gostar</string>
     <string name="action_like_all">Gostar de tudo</string>
@@ -169,20 +169,18 @@
     <string name="action_remove_like_all">Remover gosto de tudo</string>
     <string name="action_shuffle_on">Baralhar ativo</string>
     <string name="action_shuffle_off">Baralhar inativo</string>
-    <string name="repeat_mode_off">Modo de repetição ativo</string>
+    <string name="repeat_mode_off">Modo de repetição inativo</string>
     <string name="repeat_mode_one">Repetir música atual</string>
     <string name="repeat_mode_all">Repetir fila</string>
     <string name="dark_theme_off">Inativo</string>
     <string name="dark_theme_follow_system">Tema do sistema</string>
     <string name="pure_black">Preto puro</string>
     <string name="player">Reprodutor</string>
-    <string name="player_text_alignment">Alinhamento do texto do reprodutor</string>
-    <string name="sided">Lado a lado</string>
     <string name="left">Esquerda</string>
     <string name="center">Centro</string>
     <string name="right">Direita</string>
     <string name="player_slider_style">Estilo do cursor do reprodutor</string>
-    <string name="squiggly">Difuso</string>
+    <string name="squiggly">Ondulado</string>
     <string name="default_open_tab">Separador inicial</string>
     <string name="grid_cell_size">Tamanho da grelha</string>
     <string name="small">Pequena</string>
@@ -281,11 +279,23 @@
     <string name="auto_load_more_desc">Se possível, adicionar mais músicas automaticamente quando é atingido o fim da fila</string>
     <string name="clear_listen_history_confirm">Deseja limpar todo o histórico de reprodução?</string>
     <string name="search_history">Histórico de pesquisas</string>
-    <string name="auto_skip_next_on_error_desc">Garante um experiência contínua de reprodução</string>
+    <string name="auto_skip_next_on_error_desc">Garante uma experiência contínua de reprodução</string>
     <string name="auto_skip_next_on_error">Avançar automaticamente para a música seguinte se ocorrer algum erro</string>
     <string name="stop_music_on_task_clear">Parar ao limpar a tarefa</string>
-    <string name="discord_information">AsterTune utiliza a biblioteca KizzyRPC para definir o estado da sua conta Discord. Isto envolve uma ligação ao Discord Gateway, que pode ser considerada uma violação dos termos do serviço Discord. Contudo ,não há casos conhecidos de contas suspensas por este motivo. Utilize por sua conta e risco.\n\nAsterTune apenas irá extrair o seu token e tudo o resto é armazenado localmente.</string>
+    <string name="discord_information">AsterTune utiliza a biblioteca KizzyRPC para definir o estado da sua conta Discord. Isto envolve uma ligação ao Discord Gateway, que pode ser considerada uma violação dos termos do serviço Discord. Contudo, não há casos conhecidos de contas suspensas por este motivo. Utilize por sua conta e risco.\n\nAsterTune apenas irá extrair o seu token e tudo o resto é armazenado localmente.</string>
     <string name="use_login_for_browse">Inicie a sessão para ver o conteúdo de navegação</string>
-    <string name="use_login_for_browse_desc">Isto influencia o conteúdo visível, e por exemplo, mostra apenas álbuns Premium, se estiver autenticado com uma conta Premium</string>
+    <string name="use_login_for_browse_desc">Isto pode influenciar o conteúdo que vê e, por exemplo, mostrar álbuns exclusivos Premium se tiver sessão iniciada com uma conta Premium</string>
     <string name="action_login">Iniciar sessão</string>
+    <string name="duration_hours_minutes">%1$dh %2$dmin</string>
+    <string name="duration_minutes">%dmin</string>
+    <string name="heading_with_count">%1$s - %2$d</string>
+    <string name="artist_image_auto">Automática (álbum mais recente)</string>
+    <string name="minimize_player">Minimizar reprodutor</string>
+    <string name="custom_accent_color">Cor de destaque personalizada</string>
+    <string name="custom_accent_color_description">Utilizar uma cor fixa à sua escolha como destaque em toda a aplicação</string>
+    <string name="accent_color">Cor de destaque</string>
+    <string name="enable_betterlyrics">Ativar fornecedor de letras BetterLyrics</string>
+    <string name="enable_simpmusic">Ativar fornecedor de letras SimpMusic</string>
+    <string name="ignore_audio_focus">Manter o foco de áudio</string>
+    <string name="ignore_audio_focus_desc">Continuar a reproduzir quando outra aplicação assumir o foco de áudio. A música não será pausada por outras fontes de áudio, incluindo chamadas telefónicas.</string>
 </resources>
