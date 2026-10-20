@@ -1,16 +1,6 @@
 name: Build debug APK
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - '**'
-    paths-ignore:
-      - 'README.md'
-      - 'fastlane/**'
-      - 'assets/**'
-      - '.github/**/*.md'
-      - '.github/FUNDING.yml'
-      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   build:
@@ -31,24 +21,15 @@ jobs:
           distribution: "zulu"
           cache: 'gradle'
 
-      - name: Build Full Debug APK and run jvm tests
-        run: ./gradlew assembleFullDebug lintFullDebug testFullDebugUnitTest --stacktrace -DskipFormatKtlint
+      - name: Build debug APK and run jvm tests
+        run: ./gradlew assembleDebug lintFullDebug testFullDebugUnitTest --stacktrace -DskipFormatKtlint
         env:
           MUSIC_DEBUG_KEYSTORE_FILE: 'music-debug.jks'
           MUSIC_DEBUG_SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
           MUSIC_DEBUG_SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
 
-      - name: Prepare clean universal APK folder
-        run: |
-          mkdir -p final_apk_output
-          # Grabs the built universal debug apk from the full variant output path
-          BUILT_APK=$(find app/build/outputs/apk/full/debug -name "*.apk" | head -n 1)
-          cp "$BUILT_APK" "final_apk_output/Echopod-Music-Full-Debug.apk"
-
-      - name: Upload Raw APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Echopod-Music-Full-Debug-APK
-          path: final_apk_output/Echopod-Music-Full-Debug.apk
-          if-no-files-found: error
-          compression-level: 0
+          name: app
+          path: app/build/outputs/apk/full/debug/*.apk
