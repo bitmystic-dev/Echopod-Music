@@ -26,11 +26,11 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "io.github.yuuichi_s.astertune"
+        applicationId = "dev.bitmystic.echopod"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 1
+        versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // expose the TagLib library version (from the version catalog) for the About screen

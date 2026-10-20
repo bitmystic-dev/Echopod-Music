@@ -2,15 +2,15 @@
 
 **A Material Design 3 YouTube Music client and local media player for Android**
 
-<img src="https://github.com/yuuichi-s/AsterTune/raw/dev/assets/astertune.png" width="100" />
+<img src="assets/echopod.png" width="100" />
 
 
-[![Latest release](https://img.shields.io/github/v/release/yuuichi-s/AsterTune?include_prereleases)](https://github.com/yuuichi-s/AsterTune/releases)
-[![License](https://img.shields.io/github/license/yuuichi-s/AsterTune)](https://www.gnu.org/licenses/gpl-3.0)
+[![Latest release](https://img.shields.io/github/v/release/bitmystic-dev/echopod-music?include_prereleases)](https://github.com/bitmystic-dev/echopod-music/releases)
+[![License](https://img.shields.io/github/license/bitmystic-dev/echopod-music)](https://www.gnu.org/licenses/gpl-3.0)
 
-[<img src="assets/badge_github.png" alt="Get it on GitHub" height="40">](https://github.com/yuuichi-s/AsterTune/releases/latest)
+[<img src="assets/badge_github.png" alt="Get it on GitHub" height="40">](https://github.com/bitmystic-dev/echopod-music/releases/latest)
 <!--
-[<img src="assets/badge_obtainium.png" alt="Get it on Obtainium" height="40">](https://github.com/yuuichi-s/AsterTune/releases/latest)
+[<img src="assets/badge_obtainium.png" alt="Get it on Obtainium" height="40">](https://github.com/bitmystic-dev/echopod-music/releases/latest)
 [<img src="assets/badge_fdroid.svg" alt="Get it on F-Droid" height="40">](https://f-droid.org/packages/io.github.yuuichi_s.astertune/)
 [<img src="assets/IzzyOnDroidButtonGreyBorder.svg" alt="Get it on IzzyOnDroid" height="40">](https://apt.izzysoft.de/fdroid/index/apk/io.github.yuuichi_s.astertune)
 -->
