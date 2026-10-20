@@ -1,0 +1,61 @@
+package dev.bitmystic.echopod.viewmodels
+
+import android.content.Context
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dev.bitmystic.echopod.constants.PlaylistSongSortDescendingKey
+import dev.bitmystic.echopod.constants.PlaylistSongSortType
+import dev.bitmystic.echopod.constants.PlaylistSongSortTypeKey
+import dev.bitmystic.echopod.db.MusicDatabase
+import dev.bitmystic.echopod.extensions.toEnum
+import dev.bitmystic.echopod.utils.dataStore
+import dev.bitmystic.echopod.utils.sortPlaylistSongs
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class LocalPlaylistViewModel @Inject constructor(
+    @ApplicationContext context: Context,
+    database: MusicDatabase,
+    savedStateHandle: SavedStateHandle,
+) : ViewModel() {
+    val playlistId = savedStateHandle.get<String>("playlistId")!!
+    val playlistWithSongs = combine(
+        database.playlist(playlistId),
+        database.playlistSongs(playlistId),
+        context.dataStore.data
+            .map {
+                it[PlaylistSongSortTypeKey].toEnum(PlaylistSongSortType.CUSTOM) to
+                        (it[PlaylistSongSortDescendingKey] ?: true)
+            }
+            .distinctUntilChanged()
+    ) { playlist, songs, (sortType, sortDescending) ->
+        val sortedSongs = sortPlaylistSongs(songs, sortType, sortDescending)
+
+        Pair(playlist, sortedSongs)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, Pair(null, emptyList()))
+
+    init {
+        // Fix playlist song order
+        viewModelScope.launch(Dispatchers.IO) {
+            val sortedSongs = playlistWithSongs.first().second.sortedWith(compareBy({ it.map.position }, { it.map.id }))
+            database.transaction {
+                sortedSongs.forEachIndexed { index, song ->
+                    if (song.map.position != index) {
+                        update(song.map.copy(position = index))
+                    }
+                }
+            }
+        }
+    }
+}

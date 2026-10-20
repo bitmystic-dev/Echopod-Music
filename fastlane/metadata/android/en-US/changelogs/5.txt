@@ -1,0 +1,13 @@
+Echopod Music 1.0.4
+
+Features
+- Support Echo Show 5 running LineageOS.
+- Add a button that returns from the player to the mini player.
+- Show the queue name in the landscape player.
+- Show slightly larger album art in the player.
+
+Fixes
+- Show Quick picks and other Home sections that were missing.
+- Keep saved queues and playback positions.
+- Keep the mini player closed after it is closed.
+- Fix the order of album songs and radio for long albums.

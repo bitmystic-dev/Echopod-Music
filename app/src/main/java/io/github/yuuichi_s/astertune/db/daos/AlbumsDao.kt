@@ -1,0 +1,522 @@
+package dev.bitmystic.echopod.db.daos
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.Transaction
+import androidx.room.Update
+import androidx.room.Upsert
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
+import dev.bitmystic.echopod.constants.AlbumFilter
+import dev.bitmystic.echopod.constants.AlbumSortType
+import dev.bitmystic.echopod.db.entities.Album
+import dev.bitmystic.echopod.db.entities.AlbumArtistMap
+import dev.bitmystic.echopod.db.entities.AlbumEntity
+import dev.bitmystic.echopod.db.entities.AlbumThumbnail
+import dev.bitmystic.echopod.db.entities.AlbumWithSongs
+import dev.bitmystic.echopod.db.entities.ArtistEntity
+import dev.bitmystic.echopod.db.entities.Song
+import dev.bitmystic.echopod.db.entities.SongAlbumMap
+import dev.bitmystic.echopod.db.entities.SongEntity
+import dev.bitmystic.echopod.extensions.reversed
+import com.zionhuang.innertube.models.AlbumItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+
+/*
+ * Logic related to albums entities and their mapping
+ */
+
+@Dao
+interface AlbumsDao : ArtistsDao {
+
+    // region Gets
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album
+            LEFT JOIN song ON song.albumId = album.id
+        WHERE album.id = :id
+        GROUP BY album.id
+    """)
+    fun album(id: String): Flow<Album?>
+
+    @Query("SELECT * FROM album WHERE id = :id")
+    fun albumById(id: String): AlbumEntity?
+
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album
+            LEFT JOIN song ON song.albumId = album.id
+        WHERE album.title LIKE '%' || :query || '%' 
+            AND (song.inLibrary IS NOT NULL OR song.dateDownload IS NOT NULL)
+        GROUP BY album.id
+        LIMIT :previewSize
+    """)
+    fun searchAlbums(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Album>>
+
+    @Transaction
+    @Query("""
+        SELECT *
+        FROM album
+        WHERE album.isLocal = 1 
+            AND album.title LIKE '%' || :query || '%'
+        LIMIT :previewSize
+    """)
+    fun localAlbumsByNameFuzzy(query: String, previewSize: Int = Int.MAX_VALUE): List<AlbumEntity>
+
+    /**
+     * All local albums in insertion order, so callers that merge duplicates can pick the oldest
+     * row of a group without another sort.
+     */
+    @Query("SELECT * FROM album WHERE album.isLocal = 1 ORDER BY album.rowId ASC")
+    fun allLocalAlbums(): List<AlbumEntity>
+
+    /**
+     * Relink songs of [oldId] to [newId]. Rows whose song is already linked to [newId] would
+     * violate the (songId, albumId) primary key, so they are left behind for [deleteSongAlbumMap]
+     * to remove.
+     */
+    @Transaction
+    @Query("UPDATE OR IGNORE song_album_map SET albumId = :newId WHERE albumId = :oldId")
+    fun updateSongAlbumMap(oldId: String, newId: String)
+
+    /**
+     * Relinks song.albumId of local songs pointing to [oldId] to [newId], mirroring
+     * [updateSongAlbumMap] for the denormalized column read by stats, home, and library search queries.
+     */
+    @Query("UPDATE song SET albumId = :newId WHERE isLocal = 1 AND albumId = :oldId")
+    fun updateSongAlbumId(oldId: String, newId: String)
+
+    /**
+     * Corrects song.albumId for local songs whose single song_album_map entry points to a
+     * different local album row, restoring them to stats, home, and library search queries that
+     * join on song.albumId.
+     */
+    @Query("""
+        UPDATE song
+        SET albumId = (
+            SELECT song_album_map.albumId
+            FROM song_album_map
+            WHERE song_album_map.songId = song.id
+        )
+        WHERE song.isLocal = 1
+            AND (SELECT COUNT(*) FROM song_album_map WHERE song_album_map.songId = song.id) = 1
+            AND EXISTS (
+                SELECT 1
+                FROM song_album_map
+                    JOIN album ON album.id = song_album_map.albumId
+                WHERE song_album_map.songId = song.id
+                    AND album.isLocal = 1
+                    AND song.albumId IS NOT song_album_map.albumId
+            )
+    """)
+    fun fixLocalSongAlbumIdMismatches()
+
+    @Query("DELETE FROM song_album_map WHERE albumId = :albumId")
+    fun deleteSongAlbumMap(albumId: String)
+
+    /**
+     * Recalculate every local album from its library songs: song counts and durations, then
+     * album artists and artwork.
+     */
+    @Transaction
+    fun refreshLocalAlbums() {
+        recountLocalAlbums()
+        deleteLocalAlbumArtistMaps()
+        insertLocalAlbumArtistMaps()
+        updateLocalAlbumThumbnails()
+    }
+
+    @Query("DELETE FROM album_artist_map WHERE albumId IN (SELECT id FROM album WHERE isLocal = 1)")
+    fun deleteLocalAlbumArtistMaps()
+
+    /**
+     * Links each local album to the artists of its library songs, using each artist's smallest
+     * position on those songs as the mapping's order.
+     */
+    @Query("""
+        INSERT OR IGNORE INTO album_artist_map (albumId, artistId, `order`)
+        SELECT song_album_map.albumId, song_artist_map.artistId, MIN(song_artist_map.position)
+        FROM song_album_map
+            INNER JOIN album ON song_album_map.albumId = album.id
+            INNER JOIN song ON song_album_map.songId = song.id
+            INNER JOIN song_artist_map ON song_artist_map.songId = song.id
+        WHERE album.isLocal = 1
+            AND song.inLibrary IS NOT NULL
+        GROUP BY song_album_map.albumId, song_artist_map.artistId
+    """)
+    fun insertLocalAlbumArtistMaps()
+
+    /**
+     * Recount songCount and duration of every local album from its linked songs, replacing the
+     * running totals kept by the song insert and scanner update paths.
+     */
+    @Query("""
+        UPDATE album
+        SET songCount = (
+                SELECT COUNT(*)
+                FROM song_album_map
+                    INNER JOIN song ON song_album_map.songId = song.id
+                WHERE song_album_map.albumId = album.id
+                    AND song.inLibrary IS NOT NULL
+            ),
+            duration = (
+                SELECT COALESCE(SUM(song.duration), 0)
+                FROM song_album_map
+                    INNER JOIN song ON song_album_map.songId = song.id
+                WHERE song_album_map.albumId = album.id
+                    AND song.inLibrary IS NOT NULL
+            )
+        WHERE album.isLocal = 1
+    """)
+    fun recountLocalAlbums()
+
+    /**
+     * Point each local album's artwork at a file that is still a library song: non-local artwork
+     * and artwork whose file is a library song are kept, otherwise a library song of the album is
+     * used, or none when the album has no library song.
+     */
+    @Query("""
+        UPDATE album
+        SET thumbnailUrl = COALESCE(
+                CASE WHEN album.thumbnailUrl NOT LIKE '/%' THEN album.thumbnailUrl END,
+                (SELECT s.localPath 
+                 FROM song s
+                 WHERE s.localPath = album.thumbnailUrl 
+                    AND s.inLibrary IS NOT NULL
+                 LIMIT 1),
+                (SELECT MIN(s.localPath) 
+                 FROM song_album_map m 
+                    INNER JOIN song s ON s.id = m.songId
+                 WHERE m.albumId = album.id 
+                    AND s.inLibrary IS NOT NULL 
+                    AND s.localPath IS NOT NULL)
+            )
+        WHERE album.isLocal = 1
+    """)
+    fun updateLocalAlbumThumbnails()
+
+    @Query(
+        """
+        DELETE FROM album
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM song_album_map
+            WHERE song_album_map.albumId = :albumId
+        )
+        AND id = :albumId
+    """
+    )
+    fun safeDeleteAlbum(albumId: String)
+
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album
+            LEFT JOIN song ON song.albumId = album.id
+        WHERE album.id = :albumId
+        GROUP BY album.id
+    """)
+    fun _albumWithSongs(albumId: String): Flow<AlbumWithSongs?>
+
+    /**
+     * Observes the album identified by [albumId] and its songs, omitting disabled local songs.
+     * Uses each song's own isLocal/inLibrary rather than the album's isLocal, so a song list stays
+     * correct even when the album's own local/YouTube classification does not match its songs.
+     * Songs come from [albumSongs] in album order: the relation's junction view is joined by
+     * SQLite without applying the view's ORDER BY.
+     */
+    fun albumWithSongs(albumId: String): Flow<AlbumWithSongs?> =
+        combine(_albumWithSongs(albumId), albumSongs(albumId)) { album, songs ->
+            album?.copy(songs = songs)
+        }
+
+    /**
+     * Observes songs linked to [albumId], omitting disabled local songs. Uses each song's own
+     * isLocal/inLibrary rather than the album's isLocal; see [albumWithSongs].
+     */
+    @Transaction
+    @Query("""
+        SELECT song.*
+        FROM song
+            INNER JOIN song_album_map ON song.id = song_album_map.songId
+        WHERE song_album_map.albumId = :albumId
+            AND (song.isLocal = 0 OR song.inLibrary IS NOT NULL)
+        ORDER BY song_album_map.`index`
+    """)
+    fun albumSongs(albumId: String): Flow<List<Song>>
+
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album
+            INNER JOIN song ON album.id = song.albumId
+            INNER JOIN event ON song.id = event.songId
+        WHERE event.timestamp > :fromTimeStamp
+        GROUP BY album.id
+        ORDER BY SUM(event.playTime) DESC
+        LIMIT :limit OFFSET :offset;
+    """)
+    fun mostPlayedAlbums(fromTimeStamp: Long, limit: Int = 6, offset: Int = 0): Flow<List<Album>>
+
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album_artist_map 
+            INNER JOIN album ON album_artist_map.albumId = album.id
+            INNER JOIN song ON album_artist_map.albumId = song.albumId
+        WHERE artistId = :artistId
+        GROUP BY album.id
+        LIMIT :previewSize
+    """)
+    fun artistAlbumsPreview(artistId: String, previewSize: Int = 6): Flow<List<Album>>
+
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM album_artist_map
+            INNER JOIN album ON album_artist_map.albumId = album.id
+            INNER JOIN song ON album_artist_map.albumId = song.albumId
+        WHERE artistId = :artistId
+        GROUP BY album.id
+    """)
+    fun artistAlbums(artistId: String): Flow<List<Album>>
+
+    /** Albums containing the artist's library songs. */
+    @Transaction
+    @Query("""
+        SELECT album.*, count(song.dateDownload) downloadCount
+        FROM song_artist_map
+            INNER JOIN song ON song_artist_map.songId = song.id
+            INNER JOIN song_album_map ON song_album_map.songId = song.id
+            INNER JOIN album ON song_album_map.albumId = album.id
+        WHERE song_artist_map.artistId = :artistId
+            AND song.inLibrary IS NOT NULL
+        GROUP BY album.id
+    """)
+    fun artistSongAlbums(artistId: String): Flow<List<Album>>
+
+    /**
+     * Artwork for each album of [artistSongAlbums] that can still be shown: non-local artwork as is,
+     * a local album's artwork while its file is a library song, otherwise a library song of the album.
+     */
+    @Query("""
+        SELECT album.id AS albumId,
+               COALESCE(
+                   CASE WHEN album.thumbnailUrl NOT LIKE '/%' THEN album.thumbnailUrl END,
+                   (SELECT s.localPath 
+                    FROM song s
+                    WHERE s.localPath = album.thumbnailUrl 
+                        AND s.inLibrary IS NOT NULL
+                    LIMIT 1),
+                   (SELECT MIN(s.localPath) 
+                    FROM song_album_map m 
+                    INNER JOIN song s ON s.id = m.songId
+                    WHERE m.albumId = album.id 
+                        AND s.inLibrary IS NOT NULL 
+                        AND s.localPath IS NOT NULL)
+               ) AS thumbnailUrl
+        FROM album
+        WHERE album.id IN (
+            SELECT song_album_map.albumId
+            FROM song_artist_map
+                INNER JOIN song ON song_artist_map.songId = song.id
+                INNER JOIN song_album_map ON song_album_map.songId = song.id
+            WHERE song_artist_map.artistId = :artistId
+                AND song.inLibrary IS NOT NULL
+        )
+    """)
+    fun artistAlbumThumbnails(artistId: String): Flow<List<AlbumThumbnail>>
+
+    @Transaction
+    @RawQuery(
+        observedEntities = [AlbumEntity::class, SongAlbumMap::class, SongEntity::class, AlbumArtistMap::class, ArtistEntity::class]
+    )
+    fun _getAlbum(query: SupportSQLiteQuery): Flow<List<Album>>
+
+    fun albums(filter: AlbumFilter, sortType: AlbumSortType, descending: Boolean, localOnly: Boolean? = null): Flow<List<Album>> {
+        val orderBy = when (sortType) {
+            AlbumSortType.CREATE_DATE -> "album.rowId ASC"
+            AlbumSortType.NAME -> "album.title COLLATE NOCASE ASC"
+            AlbumSortType.ARTIST -> """(
+                                        SELECT LOWER(GROUP_CONCAT(name, ''))
+                                        FROM artist
+                                        WHERE id IN (SELECT artistId FROM album_artist_map WHERE albumId = album.id)
+                                        ORDER BY name
+                                    ) COLLATE NOCASE ASC"""
+            AlbumSortType.YEAR -> "album.year ASC"
+            AlbumSortType.SONG_COUNT -> "album.songCount ASC"
+            AlbumSortType.LENGTH -> "album.duration ASC"
+        }
+
+        val where = when (filter) {
+            AlbumFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+            AlbumFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+            AlbumFilter.LIKED -> "album.bookmarkedAt IS NOT NULL"
+        } + if (localOnly == null) {
+            ""
+        } else if (localOnly) {
+            " AND album.isLocal = 1"
+        } else {
+            " AND album.isLocal = 0"
+        }
+
+        val query = SimpleSQLiteQuery("""
+            SELECT album.*, count(song.dateDownload) downloadCount
+            FROM album
+                LEFT JOIN song_album_map ON album.id = song_album_map.albumId
+                LEFT JOIN song ON song.id = song_album_map.songId
+            WHERE $where
+            GROUP BY album.id
+            ORDER BY $orderBy
+        """)
+
+        return _getAlbum(query).map { it.reversed(descending) }
+    }
+
+    fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
+    fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
+
+    /**
+     * Finds the album matching [name] and [isLocal] exactly, so local and YouTube albums sharing
+     * a title are never treated as the same row. Ties resolve to the lowest rowId.
+     */
+    @Query("SELECT * FROM album WHERE title = :name AND isLocal = :isLocal ORDER BY rowId ASC LIMIT 1")
+    fun albumsByName(name: String, isLocal: Boolean): AlbumEntity?
+
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM (SELECT n.songId      AS eid,
+                     SUM(playTime) AS oldPlayTime,
+                     newPlayTime
+              FROM event
+                       JOIN
+                   (SELECT songId, SUM(playTime) AS newPlayTime
+                    FROM event
+                    WHERE timestamp > (:now - 86400000 * 30 * 1)
+                    GROUP BY songId
+                    ORDER BY newPlayTime) as n
+                   ON event.songId = n.songId
+              WHERE timestamp < (:now - 86400000 * 30 * 1)
+              GROUP BY n.songId
+              ORDER BY oldPlayTime) AS t
+                 INNER JOIN song on song.id = t.eid
+        WHERE 0.2 * t.oldPlayTime > t.newPlayTime
+        LIMIT 100
+    """
+    )
+    fun forgottenFavorites(now: Long = System.currentTimeMillis()): Flow<List<Song>>
+    @Transaction
+    @Query(
+        """
+        SELECT song.*
+        FROM event
+                 INNER JOIN
+             song ON event.songId = song.id
+        WHERE event.timestamp > (:now - 86400000 * 7 * 2)
+        GROUP BY song.albumId
+        HAVING song.albumId IS NOT NULL
+        ORDER BY sum(event.playTime) DESC
+        LIMIT :limit
+        OFFSET :offset
+        """,
+    )
+    fun recommendedAlbum(
+        now: Long = System.currentTimeMillis(),
+        limit: Int = 5,
+        offset: Int = 0,
+    ): Flow<List<Song>>
+    // endregion
+
+    // region Inserts
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(album: AlbumEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: SongAlbumMap)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: AlbumArtistMap)
+
+    @Transaction
+    fun insert(albumItem: AlbumItem) {
+        if (insert(AlbumEntity(
+                id = albumItem.browseId,
+                playlistId = albumItem.playlistId,
+                title = albumItem.title,
+                year = albumItem.year,
+                thumbnailUrl = albumItem.thumbnail,
+                songCount = 0,
+                duration = 0
+            )) == -1L
+        ) return
+        albumItem.artists
+            ?.map { artist ->
+                ArtistEntity(
+                    id = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId(),
+                    name = artist.name
+                )
+            }
+            ?.onEach(::insert)
+            ?.mapIndexed { index, artist ->
+                AlbumArtistMap(
+                    albumId = albumItem.browseId,
+                    artistId = artist.id,
+                    order = index
+                )
+            }
+            ?.forEach(::insert)
+    }
+    // endregion
+
+    // region Updates
+    @Update
+    fun update(album: AlbumEntity)
+
+    @Upsert
+    fun upsert(album: AlbumEntity)
+
+    @Upsert
+    fun upsert(map: SongAlbumMap)
+
+    /**
+     * Set artistId
+     */
+    @Transaction
+    @Query("UPDATE OR IGNORE album_artist_map SET artistId = :newId WHERE artistId = :oldId")
+    fun updateAlbumArtistMap(oldId: String, newId: String)
+
+    @Query("DELETE FROM album_artist_map WHERE artistId = :artistId")
+    fun deleteAlbumArtistMap(artistId: String)
+
+    @Transaction
+    @Query("DELETE FROM song_artist_map WHERE songId = :songID")
+    fun unlinkSongArtists(songID: String)
+
+    @Transaction
+    @Query("DELETE FROM song_album_map WHERE songId = :songID")
+    fun unlinkSongAlbums(songID: String)
+
+    @Transaction
+    @Query("DELETE FROM song_genre_map WHERE songId = :songID")
+    fun unlinkSongGenres(songID: String)
+    // endregion
+
+    // region Deletes
+    @Delete
+    fun delete(album: AlbumEntity)
+
+    @Transaction
+    @Query("DELETE FROM album WHERE isLocal = 1")
+    fun nukeLocalAlbums()
+    // endregion
+}

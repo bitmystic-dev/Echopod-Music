@@ -1,0 +1,20 @@
+<p>O Echopod Music é um player de música local e cliente do YouTube Music para Android com Material Design 3. É um fork do OuterTune.</p>
+
+<p><b>Recursos:</b></p>
+<ul>
+<li>Reprodução do YouTube Music em segundo plano, downloads para ouvir offline e sincronização da biblioteca da conta</li>
+<li>Reprodução de arquivos de áudio locais, incluindo MP3, OGG e FLAC</li>
+<li>Extrator de metadados próprio com suporte a tags de áudio com múltiplos valores e tags especializadas</li>
+<li>Músicas locais e do YouTube Music na mesma fila de reprodução</li>
+<li>Navegação por músicas, álbuns, artistas, playlists e pastas locais</li>
+<li>Múltiplas filas de reprodução</li>
+<li>Letras sincronizadas, inclusive palavra por palavra, com várias fontes e suporte à importação e edição de letras</li>
+<li>Normalização de áudio, ajustes de andamento e altura tonal e outros efeitos de áudio</li>
+<li>Suporte ao Android Auto</li>
+</ul>
+
+<p><b>Migração do OuterTune:</b></p>
+<p>Você pode transferir sua biblioteca e configurações restaurando um backup do OuterTune no Echopod Music. Os arquivos de áudio baixados não são incluídos nos backups e precisam ser baixados novamente.</p>
+
+<p><b>Mais informações:</b></p>
+<p>Visite o <a href="https://github.com/bitmystic-dev/Echopod-Music">repositório do Echopod Music</a> para obter informações sobre o projeto e instruções de migração. Relate problemas no <a href="https://github.com/bitmystic-dev/Echopod-Music/issues">rastreador de problemas</a>.</p>

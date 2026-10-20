@@ -1,0 +1,39 @@
+package dev.bitmystic.echopod.ui.component
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import dev.bitmystic.echopod.LocalPlayerAwareWindowInsets
+import my.nanihadesuka.compose.InternalLazyColumnScrollbar
+import my.nanihadesuka.compose.ScrollbarSettings
+
+// Thumb doesn't reach bottom / thumb size randomly changes
+// https://github.com/nanihadesuka/LazyColumnScrollbar/issues/40
+val DefaultScrollbar: ScrollbarSettings
+    @Composable
+    get() =
+        ScrollbarSettings.Default.copy(
+            thumbThickness = 8.dp,
+            thumbUnselectedColor = MaterialTheme.colorScheme.primary,
+            thumbSelectedColor = MaterialTheme.colorScheme.secondary, // TODO: re-eval colour
+            hideDelayMillis = 2000,
+        )
+
+@Composable
+fun LazyColumnScrollbar(
+    state: LazyListState,
+    @SuppressLint("ModifierParameter") modifier: Modifier = Modifier.windowInsetsPadding(
+        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Top + WindowInsetsSides.Bottom)
+    ),
+    settings: ScrollbarSettings = DefaultScrollbar,
+) = InternalLazyColumnScrollbar(
+    state = state,
+    settings = settings,
+    modifier = modifier
+)

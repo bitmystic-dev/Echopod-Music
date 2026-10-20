@@ -1,0 +1,1431 @@
+/*
+ * Copyright (C) 2024 z-huang/InnerTune
+ * Copyright (C) 2025 OuterTune Project
+ * Copyright (C) 2026 AsterTune Project
+ *
+ * SPDX-License-Identifier: GPL-3.0
+ *
+ * For any other attributions, refer to the git commit history
+ */
+
+package dev.bitmystic.echopod.ui.player
+
+import android.annotation.SuppressLint
+import android.util.Log
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lyrics as LyricsOutlined
+import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.FastRewind
+import androidx.compose.material.icons.rounded.Lyrics as LyricsRounded
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Replay
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEachIndexed
+import androidx.media3.common.C
+import androidx.media3.common.Player.REPEAT_MODE_ALL
+import androidx.media3.common.Player.REPEAT_MODE_OFF
+import androidx.media3.common.Player.REPEAT_MODE_ONE
+import androidx.media3.common.Player.STATE_ENDED
+import androidx.media3.common.Player.STATE_READY
+import androidx.navigation.NavController
+import coil3.compose.AsyncImage
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import coil3.toBitmap
+import dev.bitmystic.echopod.LocalMenuState
+import dev.bitmystic.echopod.LocalPlayerConnection
+import dev.bitmystic.echopod.LocalTabMode
+import dev.bitmystic.echopod.R
+import dev.bitmystic.echopod.constants.DEFAULT_PLAYER_BACKGROUND
+import dev.bitmystic.echopod.constants.PlayerBackgroundStyle
+import dev.bitmystic.echopod.constants.PlayerBackgroundStyleKey
+import dev.bitmystic.echopod.constants.PLAYER_DEBUG
+import dev.bitmystic.echopod.constants.PlayerHorizontalPadding
+import dev.bitmystic.echopod.constants.QueuePeekHeight
+import dev.bitmystic.echopod.constants.DEFAULT_SHOW_LYRICS_ON_CLICK
+import dev.bitmystic.echopod.constants.DEFAULT_SLIDER_STYLE
+import dev.bitmystic.echopod.constants.DEFAULT_SWIPE_TO_SKIP
+import dev.bitmystic.echopod.constants.SeekIncrement
+import dev.bitmystic.echopod.constants.SeekIncrementKey
+import dev.bitmystic.echopod.constants.SliderStyleKey
+import dev.bitmystic.echopod.constants.ShowLyricsKey
+import dev.bitmystic.echopod.constants.ShowLyricsOnClickKey
+import dev.bitmystic.echopod.constants.SleepTimerShowOnPlayerKey
+import dev.bitmystic.echopod.constants.SwipeToSkipKey
+import dev.bitmystic.echopod.extensions.isPowerSaver
+import dev.bitmystic.echopod.extensions.metadata
+import dev.bitmystic.echopod.extensions.supportsWideScreen
+import dev.bitmystic.echopod.extensions.usesLandscapePlayer
+import dev.bitmystic.echopod.extensions.togglePlayPause
+import dev.bitmystic.echopod.extensions.toggleRepeatMode
+import dev.bitmystic.echopod.models.MultiQueueObject
+import dev.bitmystic.echopod.playback.PlayerConnection
+import dev.bitmystic.echopod.playback.QueueBoard
+import dev.bitmystic.echopod.ui.component.BottomSheet
+import dev.bitmystic.echopod.ui.component.BottomSheetState
+import dev.bitmystic.echopod.ui.component.PlayerSliderTrack
+import dev.bitmystic.echopod.ui.component.button.ResizableIconButton
+import dev.bitmystic.echopod.ui.component.collapsedAnchor
+import dev.bitmystic.echopod.ui.component.dismissedAnchor
+import dev.bitmystic.echopod.ui.component.rememberBottomSheetState
+import dev.bitmystic.echopod.ui.menu.PlayerMenu
+import dev.bitmystic.echopod.ui.menu.SleepTimerDialog
+import dev.bitmystic.echopod.ui.theme.extractGradientColors
+import dev.bitmystic.echopod.ui.theme.rememberPlayerButtonColors
+import dev.bitmystic.echopod.ui.theme.rememberUseDarkTheme
+import dev.bitmystic.echopod.ui.utils.SnapLayoutInfoProvider
+import dev.bitmystic.echopod.utils.coilCoroutine
+import dev.bitmystic.echopod.utils.makeTimeString
+import dev.bitmystic.echopod.utils.rememberEnumPreference
+import dev.bitmystic.echopod.utils.rememberPreference
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import kotlin.math.max
+import kotlin.math.roundToInt
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@Composable
+fun BottomSheetPlayer(
+    state: BottomSheetState,
+    navController: NavController,
+    modifier: Modifier = Modifier,
+) {
+    val TAG = "BottomSheetPlayer"
+    if (PLAYER_DEBUG) Log.v(TAG, "PLR-1")
+
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val queueBoard by playerConnection.service.queueBoard.collectAsState()
+
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = DEFAULT_PLAYER_BACKGROUND
+    )
+
+    val useDarkTheme = rememberUseDarkTheme()
+
+    val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+
+    val qbInit by playerConnection.service.qbInit.collectAsState()
+
+    LaunchedEffect(qbInit, queueBoard.masterQueues.toList()) {
+        if (PLAYER_DEBUG) Log.d(TAG, "Queues changed. qbInit = $qbInit")
+        if (qbInit && !queueBoard.masterQueues.isEmpty() && state.isDismissed) {
+            if (PLAYER_DEBUG) Log.d(TAG, "Triggering sheet collapseSoft")
+            state.collapseSoft()
+        }
+    }
+
+
+    BottomSheet(
+        state = state,
+        modifier = modifier,
+        background = {
+            PlayerBackground(
+                playerConnection = playerConnection,
+                playerBackground = playerBackground,
+                showLyrics = showLyrics,
+                useDarkTheme = useDarkTheme,
+            )
+        },
+        collapsedBackgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(6.dp),
+        onDismiss = {
+            playerConnection.softKillPlayer()
+        },
+        collapsedContent = {
+            MiniPlayer()
+        }
+    ) {
+        if (PLAYER_DEBUG) Log.v(TAG, "PLR-3.0")
+
+        if (usesLandscapePlayer(LocalConfiguration.current, LocalTabMode.current)) {
+            LandscapePlayer(state, navController, queueBoard, onCollapse = state::collapseSoft)
+        } else {
+            PortraitPlayer(state, navController, queueBoard, onCollapse = state::collapseSoft)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PortraitPlayer(
+    playerSheetState: BottomSheetState,
+    navController: NavController,
+    queueBoard: QueueBoard,
+    enableQueueSheet: Boolean = true,
+    onCollapse: (() -> Unit)? = null,
+) {
+    val TAG = "BottomSheetPlayer"
+    if (PLAYER_DEBUG) Log.v(TAG, "PLR-3.1b")
+
+    val playerConnection = LocalPlayerConnection.current ?: return
+
+    val dismissedBound = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+
+    val queueSheetState = rememberBottomSheetState(
+        dismissedBound = dismissedBound,
+        expandedBound = playerSheetState.expandedBound,
+        collapsedBound = dismissedBound + (QueuePeekHeight * 1.2f),
+        initialAnchor = collapsedAnchor,
+    )
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+            .padding(bottom = queueSheetState.collapsedBound)
+    ) {
+        BoxWithConstraints(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .weight(1f)
+                .nestedScroll(playerSheetState.preUpPostDownNestedScrollConnection)
+        ) {
+            if (PLAYER_DEBUG) Log.v(TAG, "PLR-3.2b")
+            val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+
+
+            val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
+            val canSkipNext by playerConnection.canSkipNext.collectAsState()
+
+            val swipeToSkip by rememberPreference(SwipeToSkipKey, defaultValue = DEFAULT_SWIPE_TO_SKIP)
+
+            val statusBarTop = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            val collapseButtonClearance = collapseButtonClearance(
+                onCollapse = onCollapse,
+                topInset = statusBarTop,
+                verticalPadding = if (swipeToSkip) QueuePeekHeight / 2 else 0.dp,
+            )
+            val showLyricsOnClick by rememberPreference(ShowLyricsOnClickKey, defaultValue = DEFAULT_SHOW_LYRICS_ON_CLICK)
+            val previousMediaMetadata = if (swipeToSkip && playerConnection.player.hasPreviousMediaItem()) {
+                val previousIndex = playerConnection.player.previousMediaItemIndex
+                playerConnection.player.getMediaItemAt(previousIndex).metadata
+            } else null
+
+
+            val nextMediaMetadata = if (swipeToSkip && playerConnection.player.hasNextMediaItem()) {
+                val nextIndex = playerConnection.player.nextMediaItemIndex
+                playerConnection.player.getMediaItemAt(nextIndex).metadata
+            } else null
+
+            val mediaItems = listOfNotNull(previousMediaMetadata, mediaMetadata, nextMediaMetadata)
+            val currentMediaIndex = mediaItems.indexOf(mediaMetadata)
+
+
+            var sliderPosition by remember {
+                mutableStateOf<Long?>(null)
+            }
+
+
+            if (!swipeToSkip) {
+                Thumbnail(
+                    modifier = Modifier
+                        .padding(collapseButtonClearance)
+//                                .width(horizontalLazyGridItemWidth)
+                        .animateContentSize(),
+                    sliderPositionProvider = { sliderPosition },
+                    showLyricsOnClick = showLyricsOnClick,
+                    customMediaMetadata = mediaMetadata
+                )
+            } else {
+                val thumbnailLazyGridState = rememberLazyGridState()
+                val currentItem by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemIndex } }
+                val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
+
+                LaunchedEffect(itemScrollOffset) {
+                    if (!thumbnailLazyGridState.isScrollInProgress || itemScrollOffset != 0) return@LaunchedEffect
+
+                    if (currentItem > currentMediaIndex)
+                        playerConnection.player.seekToNext()
+                    else if (currentItem < currentMediaIndex)
+                        playerConnection.player.seekToPreviousMediaItem()
+                }
+
+                LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
+                    // When the media item changes, scroll to it
+                    val index = maxOf(0, currentMediaIndex)
+
+                    // Only animate scroll when player expanded, otherwise animated scroll won't work
+                    if (playerSheetState.isExpanded)
+                        thumbnailLazyGridState.animateScrollToItem(index)
+                    else
+                        thumbnailLazyGridState.scrollToItem(index)
+                }
+
+                val horizontalLazyGridItemWidthFactor = 1f
+                val thumbnailSnapLayoutInfoProvider = remember(thumbnailLazyGridState) {
+                    SnapLayoutInfoProvider(
+                        lazyGridState = thumbnailLazyGridState,
+                        positionInLayout = { layoutSize, itemSize ->
+                            (layoutSize * horizontalLazyGridItemWidthFactor / 2f - itemSize / 2f)
+                        }
+                    )
+                }
+                val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+
+                LazyHorizontalGrid(
+                    state = thumbnailLazyGridState,
+                    rows = GridCells.Fixed(1),
+                    flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                    userScrollEnabled = playerSheetState.isExpanded,
+                    modifier = Modifier
+                        .padding(collapseButtonClearance)
+                        .padding(vertical = QueuePeekHeight / 2)
+                ) {
+                    items(
+                        items = mediaItems,
+                        key = { it.id }
+                    ) {
+                        Thumbnail(
+                            modifier = Modifier
+                                .width(horizontalLazyGridItemWidth)
+                                .animateContentSize(),
+                            sliderPositionProvider = { sliderPosition },
+                            showLyricsOnClick = showLyricsOnClick,
+                            customMediaMetadata = it
+                        )
+                    }
+                }
+            }
+
+            PlayerCollapseButton(onCollapse = onCollapse, topInset = statusBarTop)
+            if (onCollapse != null) {
+                QueuePosition(topInset = statusBarTop)
+            }
+        }
+
+        ControlsContent(playerSheetState, queueSheetState, navController, queueBoard)
+
+
+        Spacer(Modifier.height(24.dp))
+
+
+    }
+
+    if (enableQueueSheet) {
+        QueueSheet(
+            state = queueSheetState,
+            playerBottomSheetState = playerSheetState,
+            onTerminate = {
+                playerSheetState.dismiss()
+                queueBoard.detachedHead = false
+            },
+            navController = navController
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun LandscapePlayer(
+    playerSheetState: BottomSheetState,
+    navController: NavController,
+    queueBoard: QueueBoard,
+    enableQueueSheet: Boolean = true,
+    onCollapse: (() -> Unit)? = null,
+) {
+    val TAG = "BottomSheetPlayer"
+
+    val context = LocalContext.current
+    val playerConnection = LocalPlayerConnection.current ?: return
+
+    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+
+
+    val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
+    val canSkipNext by playerConnection.canSkipNext.collectAsState()
+
+    val swipeToSkip by rememberPreference(SwipeToSkipKey, defaultValue = DEFAULT_SWIPE_TO_SKIP)
+    val showLyricsOnClick by rememberPreference(ShowLyricsOnClickKey, defaultValue = DEFAULT_SHOW_LYRICS_ON_CLICK)
+    val previousMediaMetadata = if (swipeToSkip && playerConnection.player.hasPreviousMediaItem()) {
+        val previousIndex = playerConnection.player.previousMediaItemIndex
+        playerConnection.player.getMediaItemAt(previousIndex).metadata
+    } else null
+
+    val nextMediaMetadata = if (swipeToSkip && playerConnection.player.hasNextMediaItem()) {
+        val nextIndex = playerConnection.player.nextMediaItemIndex
+        playerConnection.player.getMediaItemAt(nextIndex).metadata
+    } else null
+
+    val mediaItems = listOfNotNull(previousMediaMetadata, mediaMetadata, nextMediaMetadata)
+    val currentMediaIndex = mediaItems.indexOf(mediaMetadata)
+
+
+    val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+    val error by playerConnection.error.collectAsState()
+
+    var sliderPosition by remember {
+        mutableStateOf<Long?>(null)
+    }
+    val queueHintAnchor = remember { QueueHintAnchor() }
+
+    val dismissedBound = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
+    val queueSheetState = rememberBottomSheetState(
+        dismissedBound = dismissedBound,
+        expandedBound = playerSheetState.expandedBound,
+        collapsedBound = dismissedBound,
+        initialAnchor = dismissedAnchor,
+    )
+
+    val vPadding = max(
+        WindowInsets.safeDrawing.getTop(LocalDensity.current),
+        WindowInsets.safeDrawing.getBottom(LocalDensity.current)
+    )
+    val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
+    val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
+    Row(
+        modifier = Modifier
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets)
+            )
+            .fillMaxSize()
+    ) {
+        BoxWithConstraints(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .weight(1f)
+                .nestedScroll(playerSheetState.preUpPostDownNestedScrollConnection)
+        ) {
+            if (PLAYER_DEBUG) Log.v(TAG, "PLR-3.1a")
+            val collapseButtonClearance = collapseButtonClearance(
+                onCollapse = onCollapse,
+                topInset = 0.dp,
+                verticalPadding = if (swipeToSkip) 16.dp else 0.dp,
+            )
+
+            if (!swipeToSkip) {
+                Thumbnail(
+                    sliderPositionProvider = { sliderPosition },
+                    modifier = Modifier
+                        .padding(collapseButtonClearance)
+//                                .width(horizontalLazyGridItemWidth)
+                        .animateContentSize(),
+                    showLyricsOnClick = showLyricsOnClick,
+                    customMediaMetadata = mediaMetadata,
+                    onArtworkPositioned = queueHintAnchor::onArtworkPositioned
+                )
+            } else {
+                val thumbnailLazyGridState = rememberLazyGridState()
+                val currentItem by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemIndex } }
+                val itemScrollOffset by remember { derivedStateOf { thumbnailLazyGridState.firstVisibleItemScrollOffset } }
+
+                LaunchedEffect(itemScrollOffset) {
+                    if (!thumbnailLazyGridState.isScrollInProgress || itemScrollOffset != 0) return@LaunchedEffect
+
+                    if (currentItem > currentMediaIndex)
+                        playerConnection.player.seekToNext()
+                    else if (currentItem < currentMediaIndex)
+                        playerConnection.player.seekToPreviousMediaItem()
+                }
+
+                LaunchedEffect(mediaMetadata, canSkipPrevious, canSkipNext) {
+                    // When the media item changes, scroll to it
+                    val index = maxOf(0, currentMediaIndex)
+
+                    // Only animate scroll when player expanded, otherwise animated scroll won't work
+                    if (playerSheetState.isExpanded)
+                        thumbnailLazyGridState.animateScrollToItem(index)
+                    else
+                        thumbnailLazyGridState.scrollToItem(index)
+                }
+
+                val horizontalLazyGridItemWidthFactor = 1f
+                val thumbnailSnapLayoutInfoProvider = remember(thumbnailLazyGridState) {
+                    SnapLayoutInfoProvider(
+                        lazyGridState = thumbnailLazyGridState,
+                        positionInLayout = { layoutSize, itemSize ->
+                            (layoutSize * horizontalLazyGridItemWidthFactor / 2f - itemSize / 2f)
+                        }
+                    )
+                }
+                val horizontalLazyGridItemWidth = maxWidth * horizontalLazyGridItemWidthFactor
+
+
+                LazyHorizontalGrid(
+                    state = thumbnailLazyGridState,
+                    rows = GridCells.Fixed(1),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    flingBehavior = rememberSnapFlingBehavior(thumbnailSnapLayoutInfoProvider),
+                    userScrollEnabled = playerSheetState.isExpanded,
+                    modifier = Modifier.padding(collapseButtonClearance)
+                ) {
+                    items(
+                        items = mediaItems,
+                        key = { it.id }
+                    ) {
+                        Thumbnail(
+                            sliderPositionProvider = { sliderPosition },
+                            modifier = Modifier
+                                .width(horizontalLazyGridItemWidth)
+                                .animateContentSize(),
+                            showLyricsOnClick = showLyricsOnClick,
+                            customMediaMetadata = it,
+                            onArtworkPositioned = queueHintAnchor::onArtworkPositioned
+                        )
+                    }
+                }
+            }
+
+            PlayerCollapseButton(onCollapse = onCollapse, topInset = 0.dp)
+        }
+
+        val showQueueHint = context.supportsWideScreen()
+        // Ignore the last artwork position while lyrics or a playback error are shown.
+        val artworkHidden = !isArtworkShown(showLyrics, error)
+        Layout(
+            content = {
+                ControlsContent(playerSheetState, queueSheetState, navController, queueBoard)
+                if (showQueueHint) {
+                    LandscapeQueueHint(queueSheetState)
+                }
+            },
+            modifier = Modifier
+                // "percentage to half width", not "percentage of width"
+                .weight(if (showLyrics) 0.65f else 1f, false)
+                .animateContentSize()
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                .fillMaxHeight()
+                .onGloballyPositioned(queueHintAnchor::onColumnPositioned)
+        ) { measurables, constraints ->
+            val placeables = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+            val controls = placeables[0]
+            val hint = placeables.getOrNull(1)
+            val width = placeables.maxOf { it.width }.coerceIn(constraints.minWidth, constraints.maxWidth)
+            val height = constraints.maxHeight
+            layout(width, height) {
+                // Center the controls as if the hint sat directly below them
+                val controlsY = (height - controls.height - (hint?.height ?: 0)) / 2
+                controls.place((width - controls.width) / 2, controlsY)
+                if (hint == null) return@layout
+
+                // Align the hint's bottom with the artwork when possible, keeping it below the controls.
+                val stackedY = controlsY + controls.height
+                // Read the artwork position here so that its changes only trigger a new placement.
+                val bottom = if (artworkHidden) null else queueHintAnchor.artworkBottom
+                val alignedY = if (bottom != null) {
+                    minOf(bottom.roundToInt(), height) - hint.height
+                } else {
+                    stackedY
+                }
+                hint.place((width - hint.width) / 2, maxOf(stackedY, alignedY))
+            }
+        }
+    }
+
+    if (enableQueueSheet) {
+        QueueSheet(
+            state = queueSheetState,
+            playerBottomSheetState = playerSheetState,
+            onTerminate = {
+                playerSheetState.dismiss()
+                queueBoard.detachedHead = false
+            },
+            navController = navController
+        )
+    }
+}
+
+/**
+ * Tracks the bottom edge of the landscape player's artwork in the coordinates of its controls column.
+ *
+ * Positions are read only after layout, because a layout that reads coordinates while placing is
+ * placed again whenever an ancestor moves, such as on every frame of a player sheet drag.
+ */
+private class QueueHintAnchor {
+    private var artwork: LayoutCoordinates? = null
+    private var column: LayoutCoordinates? = null
+
+    /** Bottom edge of the artwork, or null until both the artwork and the column are positioned. */
+    var artworkBottom by mutableStateOf<Float?>(null)
+        private set
+
+    fun onArtworkPositioned(coordinates: LayoutCoordinates) {
+        artwork = coordinates
+        update()
+    }
+
+    fun onColumnPositioned(coordinates: LayoutCoordinates) {
+        column = coordinates
+        update()
+    }
+
+    private fun update() {
+        val artwork = artwork?.takeIf { it.isAttached } ?: return
+        val column = column?.takeIf { it.isAttached } ?: return
+        artworkBottom = column.localBoundingBoxOf(artwork, clipBounds = false).bottom
+    }
+}
+
+/**
+ * Displays a button that collapses the expanded player into the mini player.
+ */
+@Composable
+private fun BoxScope.PlayerCollapseButton(
+    onCollapse: (() -> Unit)?,
+    topInset: Dp,
+) {
+    if (onCollapse == null) return
+    IconButton(
+        onClick = onCollapse,
+        modifier = Modifier
+            .align(Alignment.TopStart)
+            .padding(start = CollapseButtonStartPadding, top = topInset)
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.ExpandMore,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            contentDescription = stringResource(R.string.minimize_player),
+        )
+    }
+}
+
+/**
+ * Displays the current song's position in the queue and the queue size, such as "2/10", at the top
+ * center while the artwork is shown.
+ */
+@Composable
+private fun BoxScope.QueuePosition(topInset: Dp) {
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val color = rememberPlayerOnBackgroundColor(rememberUseDarkTheme())
+    val queueWindows by playerConnection.queueWindows.collectAsState()
+    val currentWindowIndex by playerConnection.currentWindowIndex.collectAsState()
+    val queueBoard by playerConnection.queueBoard.collectAsState()
+    val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+    val error by playerConnection.error.collectAsState()
+    val (index, size) = if (queueWindows.isNotEmpty()) {
+        if (currentWindowIndex !in queueWindows.indices) return
+        currentWindowIndex to queueWindows.size
+    } else {
+        // The current queue is not loaded into the player yet, such as one restored at startup.
+        queueBoard.getCurrentQueue()?.playbackPosition() ?: return
+    }
+
+    // Fades with the artwork in Thumbnail.
+    AnimatedVisibility(
+        visible = isArtworkShown(showLyrics, error),
+        enter = fadeIn(),
+        exit = fadeOut(),
+        modifier = Modifier
+            .align(Alignment.TopCenter)
+            .padding(top = topInset)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.heightIn(min = CollapseButtonSize)
+        ) {
+            Text(
+                text = "${index + 1}/$size",
+                style = MaterialTheme.typography.titleMedium,
+                color = color,
+            )
+        }
+    }
+}
+
+/**
+ * Returns the current song's index in playback order and the queue size, or null when the stored
+ * position is outside the queue. Unlike [MultiQueueObject.getQueuePosShuffled], leaves the queue
+ * unchanged.
+ */
+private fun MultiQueueObject.playbackPosition(): Pair<Int, Int>? {
+    val song = queue.getOrNull(queuePos) ?: return null
+    val index = if (shuffled) song.shuffleIndex else queuePos
+    return if (index in queue.indices) index to queue.size else null
+}
+
+/**
+ * Returns the color of the text drawn on the player background, such as the song title and artists.
+ */
+@Composable
+private fun rememberPlayerOnBackgroundColor(useDarkTheme: Boolean): Color {
+    val playerBackground by rememberEnumPreference(
+        key = PlayerBackgroundStyleKey,
+        defaultValue = DEFAULT_PLAYER_BACKGROUND
+    )
+    return when (playerBackground) {
+        PlayerBackgroundStyle.FOLLOW_THEME -> MaterialTheme.colorScheme.secondary
+        else ->
+            if (useDarkTheme)
+                MaterialTheme.colorScheme.onSurface
+            else {
+                val c = MaterialTheme.colorScheme.secondary
+                c.copy(alpha = 1f, red = c.red - 0.2f, green = c.green - 0.2f, blue = c.blue - 0.2f)
+            }
+    }
+}
+
+// Minimum touch target of a Material 3 icon button
+private val CollapseButtonSize = 48.dp
+
+private val CollapseButtonStartPadding = PlayerHorizontalPadding - 12.dp
+
+/**
+ * Returns the thumbnail padding that keeps the thumbnail clear of [PlayerCollapseButton].
+ */
+private fun BoxWithConstraintsScope.collapseButtonClearance(
+    onCollapse: (() -> Unit)?,
+    topInset: Dp,
+    verticalPadding: Dp,
+): PaddingValues {
+    if (onCollapse == null) return PaddingValues()
+
+    val areaWidth = maxWidth - PlayerHorizontalPadding * 2
+    val areaTop = topInset + verticalPadding
+    val areaHeight = maxHeight - areaTop - verticalPadding
+    val size = minOf(areaWidth, areaHeight).coerceAtLeast(0.dp)
+    val left = PlayerHorizontalPadding + (areaWidth - size) / 2
+    val top = areaTop + (areaHeight - size) / 2
+    val buttonBottom = topInset + CollapseButtonSize
+
+    if (left >= CollapseButtonStartPadding + CollapseButtonSize || top >= buttonBottom) {
+        return PaddingValues()
+    }
+    return PaddingValues(
+        top = (buttonBottom - areaTop).coerceAtLeast(0.dp),
+        bottom = (maxHeight - verticalPadding - (top + size)).coerceAtLeast(0.dp),
+    )
+}
+
+@Composable
+fun ActionButtons(
+    playerSheetState: BottomSheetState,
+    navController: NavController,
+) {
+    val TAG = "ActionButtons()"
+    if (PLAYER_DEBUG) Log.v(TAG, "PLR-AB-1")
+
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val menuState = LocalMenuState.current
+
+
+    val currentSong by playerConnection.currentSong.collectAsState(initial = null)
+    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    val (buttonContainerColor, buttonContentColor) = rememberPlayerButtonColors()
+
+    var showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+
+    val showSleepTimerButton by rememberPreference(SleepTimerShowOnPlayerKey, defaultValue = true)
+
+    val sleepTimerActive = remember(
+        playerConnection.service.sleepTimer.triggerTime,
+        playerConnection.service.sleepTimer.pauseWhenSongEnd
+    ) {
+        playerConnection.service.sleepTimer.isActive
+    }
+
+    var sleepTimerTimeLeft by remember {
+        mutableLongStateOf(0L)
+    }
+
+    LaunchedEffect(sleepTimerActive) {
+        if (sleepTimerActive) {
+            while (isActive) {
+                sleepTimerTimeLeft = if (playerConnection.service.sleepTimer.pauseWhenSongEnd) {
+                    playerConnection.player.duration - playerConnection.player.currentPosition
+                } else {
+                    playerConnection.service.sleepTimer.triggerTime - System.currentTimeMillis()
+                }
+                delay(1000L)
+            }
+        }
+    }
+
+    var showSleepTimerDialog by remember {
+        mutableStateOf(false)
+    }
+
+    if (showSleepTimerDialog) {
+        SleepTimerDialog(onDismiss = { showSleepTimerDialog = false })
+    }
+
+    Spacer(modifier = Modifier.width(10.dp))
+
+    if (showSleepTimerButton) {
+        if (sleepTimerActive) {
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(buttonContainerColor)
+                    .clickable { showSleepTimerDialog = true }
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = makeTimeString(sleepTimerTimeLeft),
+                    color = buttonContentColor,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .offset(y = 5.dp)
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(buttonContainerColor)
+            ) {
+                ResizableIconButton(
+                    icon = Icons.Rounded.Bedtime,
+                    color = buttonContentColor,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(24.dp),
+                    onClick = { showSleepTimerDialog = true }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(7.dp))
+    }
+
+    Box(
+        modifier = Modifier
+            .offset(y = 5.dp)
+            .size(36.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(buttonContainerColor)
+    ) {
+        ResizableIconButton(
+            icon = if (showLyrics) Icons.Rounded.LyricsRounded else Icons.Outlined.LyricsOutlined,
+            color = buttonContentColor,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(24.dp),
+            onClick = { showLyrics = !showLyrics }
+        )
+    }
+
+    Spacer(modifier = Modifier.width(7.dp))
+
+    Box(
+        modifier = Modifier
+            .offset(y = 5.dp)
+            .size(36.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(buttonContainerColor)
+    ) {
+        ResizableIconButton(
+            icon = if (currentSong?.song?.liked == true) R.drawable.favorite else R.drawable.favorite_border,
+            color = buttonContentColor,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(24.dp),
+            onClick = playerConnection::toggleLike
+        )
+    }
+
+    Spacer(modifier = Modifier.width(7.dp))
+
+    Box(
+        modifier = Modifier
+            .offset(y = 5.dp)
+            .size(36.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(buttonContainerColor)
+    ) {
+        ResizableIconButton(
+            icon = Icons.Rounded.MoreVert,
+            color = buttonContentColor,
+            modifier = Modifier
+                .size(24.dp)
+                .align(Alignment.Center),
+            onClick = {
+                menuState.show {
+                    PlayerMenu(
+                        mediaMetadata = mediaMetadata,
+                        navController = navController,
+                        playerBottomSheetState = playerSheetState,
+                        onDismiss = menuState::dismiss
+                    )
+                }
+            }
+        )
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ControlsContent(
+    playerSheetState: BottomSheetState,
+    queueSheetState: BottomSheetState,
+    navController: NavController,
+    queueBoard: QueueBoard,
+) {
+    val TAG = "ControlsContent()"
+    if (PLAYER_DEBUG) Log.v(TAG, "PLR-CC-1")
+
+    val haptic = LocalHapticFeedback.current
+    val playerConnection = LocalPlayerConnection.current ?: return
+    val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+
+
+    val isPlaying by playerConnection.isPlaying.collectAsState()
+    val repeatMode by playerConnection.repeatMode.collectAsState()
+    val canSkipPrevious by playerConnection.canSkipPrevious.collectAsState()
+    val canSkipNext by playerConnection.canSkipNext.collectAsState()
+
+    val playPauseRoundness by animateDpAsState(
+        targetValue = if (isPlaying) 24.dp else 36.dp,
+        animationSpec = tween(durationMillis = 100, easing = LinearEasing),
+        label = "playPauseRoundness"
+    )
+
+
+    val seekIncrement by rememberEnumPreference(
+        key = SeekIncrementKey,
+        defaultValue = SeekIncrement.OFF
+    )
+
+    val showLyrics by rememberPreference(ShowLyricsKey, defaultValue = false)
+
+    val useDarkTheme = rememberUseDarkTheme()
+
+    val sliderStyle by rememberEnumPreference(
+        key = SliderStyleKey,
+        defaultValue = DEFAULT_SLIDER_STYLE
+    )
+
+    val (buttonContainerColor, buttonContentColor) = rememberPlayerButtonColors()
+
+    val onBackgroundColor = rememberPlayerOnBackgroundColor(useDarkTheme)
+
+    // In the dark theme, the skip and seek buttons around play/pause share its content color.
+    val skipButtonColor = if (useDarkTheme) buttonContentColor else onBackgroundColor
+
+
+    val playbackState by playerConnection.playbackState.collectAsState()
+    var duration by rememberSaveable(playbackState) {
+        mutableLongStateOf(playerConnection.player.duration)
+    }
+
+    var position by remember(playbackState) {
+        mutableLongStateOf(playerConnection.player.currentPosition)
+    }
+
+    LaunchedEffect(playbackState) {
+        if (playbackState == STATE_READY) {
+            while (isActive) {
+                delay(500)
+                position = playerConnection.player.currentPosition
+                duration = playerConnection.player.duration
+            }
+        }
+    }
+
+
+    var sliderPosition by remember {
+        mutableStateOf<Long?>(null)
+    }
+
+    BoxWithConstraints() {
+        val maxW = maxWidth
+        val compactWidth = maxW < 400.dp
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // action buttons for landscape (above title)
+            if (compactWidth) {
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = PlayerHorizontalPadding, end = PlayerHorizontalPadding, bottom = 16.dp)
+                ) {
+                    ActionButtons(playerSheetState, navController)
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding)
+            ) {
+                Row {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = mediaMetadata?.title ?: "",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = onBackgroundColor,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .basicMarquee(
+                                    iterations = 1,
+                                    initialDelayMillis = 3000
+                                )
+                                .clickable(enabled = mediaMetadata?.album != null) {
+                                    navController.navigate("album/${mediaMetadata?.album!!.id}")
+                                    playerSheetState.collapseSoft()
+                                }
+                        )
+
+                        Row {
+                            mediaMetadata?.artists?.fastForEachIndexed { index, artist ->
+                                Text(
+                                    text = artist.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = onBackgroundColor,
+                                    maxLines = 1,
+                                    modifier = Modifier
+                                        .basicMarquee(
+                                            iterations = 1,
+                                            initialDelayMillis = 5000
+                                        )
+                                        .clickable(enabled = artist.id != null) {
+                                            navController.navigate("artist/${artist.id}")
+                                            playerSheetState.collapseSoft()
+                                        }
+                                )
+
+                                if (index != mediaMetadata?.artists?.lastIndex) {
+                                    Text(
+                                        text = ", ",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = onBackgroundColor
+                                    )
+                                }
+                            } ?: Text(
+                                text = "",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = onBackgroundColor,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+
+                    // action buttons for portrait (inline with title)
+                    if (!compactWidth) {
+                        ActionButtons(playerSheetState, navController)
+                    }
+                }
+            }
+
+            Slider(
+                value = (sliderPosition ?: position).toFloat(),
+                valueRange = 0f..(if (duration == C.TIME_UNSET) 0f else duration.toFloat()),
+                onValueChange = {
+                    sliderPosition = it.toLong()
+                    // slider too granular for this haptic to feel right
+//                    haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                },
+                onValueChangeFinished = {
+                    sliderPosition?.let {
+                        playerConnection.player.seekTo(it)
+                        position = it
+                    }
+                    sliderPosition = null
+                    haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                },
+                thumb = { Spacer(modifier = Modifier.size(0.dp)) },
+                track = { sliderState ->
+                    PlayerSliderTrack(
+                        sliderState = sliderState,
+                        colors = SliderDefaults.colors(),
+                        style = sliderStyle,
+                        animate = isPlaying && sliderPosition == null
+                    )
+                },
+                modifier = Modifier.padding(horizontal = PlayerHorizontalPadding)
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding + 4.dp)
+            ) {
+                Text(
+                    text = makeTimeString(sliderPosition ?: position),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = onBackgroundColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = if (duration != C.TIME_UNSET) makeTimeString(duration) else "",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = onBackgroundColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding)
+            ) {
+                val shuffleModeEnabled by playerConnection.shuffleModeEnabled.collectAsState()
+
+                Box(modifier = Modifier.weight(1f)) {
+                    ResizableIconButton(
+                        icon = if (shuffleModeEnabled) R.drawable.shuffle_on else R.drawable.shuffle_off,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(4.dp)
+                            .align(Alignment.Center),
+                        color = onBackgroundColor,
+                        enabled = playerConnection.player.currentMediaItem != null,
+                        onClick = {
+                            playerConnection.triggerShuffle()
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        }
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    ResizableIconButton(
+                        icon = Icons.Rounded.SkipPrevious,
+                        enabled = canSkipPrevious,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .align(Alignment.Center),
+                        color = skipButtonColor,
+                        onClick = {
+                            if (playerConnection.player.currentMediaItem == null) {
+                                queueBoard.setCurrQueue()
+                            }
+                            playerConnection.player.seekToPrevious()
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        }
+                    )
+                }
+
+                if (seekIncrement != SeekIncrement.OFF) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        ResizableIconButton(
+                            icon = Icons.Rounded.FastRewind,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center),
+                            color = skipButtonColor,
+                            enabled = playerConnection.player.currentMediaItem != null,
+                            onClick = {
+                                playerConnection.player.seekTo(playerConnection.player.currentPosition - seekIncrement.millisec)
+                            }
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .size(if (maxW >= 320.dp) if (showLyrics) 56.dp else 72.dp else 42.dp)
+                        .animateContentSize()
+                        .clip(RoundedCornerShape(playPauseRoundness))
+                        .background(buttonContainerColor)
+                        .clickable {
+                            if (playerConnection.player.currentMediaItem == null) {
+                                queueBoard.setCurrQueue()
+                                playerConnection.player.togglePlayPause()
+                            } else if (playbackState == STATE_ENDED) {
+                                playerConnection.player.seekTo(0, 0)
+                                playerConnection.player.playWhenReady = true
+                            } else {
+                                playerConnection.player.togglePlayPause()
+                            }
+                            // play/pause is slightly harder haptic
+                            haptic.performHapticFeedback(HapticFeedbackType.Confirm)
+                        }
+                ) {
+                    Image(
+                        imageVector = if (playbackState == STATE_ENDED) Icons.Rounded.Replay else if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(buttonContentColor),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(36.dp)
+                    )
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                if (seekIncrement != SeekIncrement.OFF) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        ResizableIconButton(
+                            icon = Icons.Rounded.FastForward,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center),
+                            color = skipButtonColor,
+                            enabled = playerConnection.player.currentMediaItem != null,
+                            onClick = {
+                                //ExoPlayer seek increment can only be set in builder
+                                //playerConnection.player.seekForward()
+                                playerConnection.player.seekTo(playerConnection.player.currentPosition + seekIncrement.millisec)
+                            }
+                        )
+                    }
+                }
+
+
+
+                Box(modifier = Modifier.weight(1f)) {
+                    ResizableIconButton(
+                        icon = Icons.Rounded.SkipNext,
+                        enabled = canSkipNext,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .align(Alignment.Center),
+                        color = skipButtonColor,
+                        onClick = {
+                            playerConnection.player.seekToNext()
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        }
+                    )
+                }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    ResizableIconButton(
+                        icon = when (repeatMode) {
+                            REPEAT_MODE_OFF -> R.drawable.repeat_off
+                            REPEAT_MODE_ALL -> R.drawable.repeat_on
+                            REPEAT_MODE_ONE -> R.drawable.repeat_one
+                            else -> throw IllegalStateException()
+                        },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(4.dp)
+                            .align(Alignment.Center),
+                        color = onBackgroundColor,
+                        enabled = playerConnection.player.currentMediaItem != null,
+                        onClick = {
+                            playerConnection.player.toggleRepeatMode()
+                            haptic.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Displays a handle that opens the queue from the landscape player.
+ */
+@Composable
+private fun LandscapeQueueHint(queueSheetState: BottomSheetState) {
+    val haptic = LocalHapticFeedback.current
+    Column(
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .padding(top = 12.dp)
+            .heightIn(min = QueuePeekHeight)
+            .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    queueSheetState.expandSoft()
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }
+            )
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.ExpandLess,
+            tint = MaterialTheme.colorScheme.onSurface,
+            contentDescription = null,
+        )
+        QueueHandleTitle()
+    }
+}
+
+@Composable
+fun PlayerBackground(
+    playerConnection: PlayerConnection,
+    playerBackground: PlayerBackgroundStyle,
+    showLyrics: Boolean,
+    useDarkTheme: Boolean,
+) {
+    val TAG = "PlayerBackground"
+    if (PLAYER_DEBUG) Log.v(TAG, "PLR_BG-1")
+
+    val context = LocalContext.current
+
+    Box(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(NavigationBarDefaults.Elevation))
+            .fillMaxSize()
+    ) {
+
+        val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+        var gradientColors by remember {
+            mutableStateOf<List<Color>>(emptyList())
+        }
+
+
+        // gradient colours
+        LaunchedEffect(mediaMetadata, playerBackground) {
+            if (playerBackground != PlayerBackgroundStyle.GRADIENT || context.isPowerSaver()) return@LaunchedEffect
+
+            withContext(coilCoroutine) {
+                val result = context.imageLoader.execute(
+                    ImageRequest.Builder(context)
+                        .data(mediaMetadata?.getThumbnailModel(100, 100))
+                        .allowHardware(false)
+                        .build()
+                )
+
+                val bitmap = result.image?.toBitmap()?.extractGradientColors()
+                bitmap?.let {
+                    gradientColors = it
+                }
+            }
+        }
+
+
+        AnimatedContent(
+            targetState = mediaMetadata,
+            transitionSpec = {
+                fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+            }
+        ) { metadata ->
+            if (playerBackground == PlayerBackgroundStyle.BLUR) {
+                if (PLAYER_DEBUG) Log.v(TAG, "PLR-2.2a")
+                AsyncImage(
+                    model = metadata?.getThumbnailModel(100, 100),
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .blur(100.dp)
+                        .alpha(0.5f)
+                )
+            }
+        }
+
+        AnimatedContent(
+            targetState = gradientColors,
+            transitionSpec = {
+                fadeIn(tween(1000)).togetherWith(fadeOut(tween(1000)))
+            }
+        ) { colors ->
+            if (playerBackground == PlayerBackgroundStyle.GRADIENT && colors.size >= 2) {
+                if (PLAYER_DEBUG) Log.v(TAG, "PLR-2.2b")
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Brush.verticalGradient(colors), alpha = 0.4f)
+                )
+            }
+        }
+
+        if (playerBackground != PlayerBackgroundStyle.FOLLOW_THEME && showLyrics) {
+            if (PLAYER_DEBUG) Log.v(TAG, "PLR-2.2c")
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(if (useDarkTheme) Color.Black.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.5f))
+            )
+        }
+    }
+}

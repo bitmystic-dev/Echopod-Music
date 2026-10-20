@@ -1,0 +1,302 @@
+package dev.bitmystic.echopod.db.daos
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.RawQuery
+import androidx.room.Transaction
+import androidx.room.Update
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
+import com.zionhuang.innertube.pages.ArtistPage
+import dev.bitmystic.echopod.constants.ArtistFilter
+import dev.bitmystic.echopod.constants.ArtistSongSortType
+import dev.bitmystic.echopod.constants.ArtistSortType
+import dev.bitmystic.echopod.db.entities.Artist
+import dev.bitmystic.echopod.db.entities.ArtistEntity
+import dev.bitmystic.echopod.db.entities.LocalArtistThumbnail
+import dev.bitmystic.echopod.db.entities.Song
+import dev.bitmystic.echopod.db.entities.SongArtistMap
+import dev.bitmystic.echopod.db.entities.SongEntity
+import dev.bitmystic.echopod.extensions.reversed
+import dev.bitmystic.echopod.ui.utils.resize
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
+
+/*
+ * Logic related to artists entities and their mapping
+ */
+
+@Dao
+interface ArtistsDao {
+
+    // region Gets
+    @Query("""
+        SELECT 
+            artist.*,
+            COUNT(song.id) AS songCount,
+            SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+        FROM artist
+            LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
+            LEFT JOIN song ON sam.songId = song.id AND song.inLibrary IS NOT NULL
+        WHERE artist.id = :id
+        GROUP BY artist.id
+    """)
+    fun artist(id: String): Flow<Artist?>
+
+    @Query("SELECT * FROM artist WHERE id = :id")
+    fun artistById(id: String): ArtistEntity?
+
+    @Query("SELECT * FROM artist WHERE name = :name")
+    fun artistByName(name: String): ArtistEntity?
+
+    @Query("SELECT * FROM artist WHERE isLocal = 1 AND name = :name COLLATE NOCASE LIMIT 1")
+    fun localArtistByName(name: String): ArtistEntity?
+
+    @Query("SELECT * FROM artist WHERE isLocal = 0 AND name = :name LIMIT 1")
+    fun remoteArtistByName(name: String): ArtistEntity?
+
+    @Query("SELECT * FROM artist WHERE isLocal = 1 AND name LIKE '%' || :name || '%'")
+    fun localArtistsByNameFuzzy(name: String): List<ArtistEntity>
+
+    @Query("""
+        SELECT 
+            artist.*,
+            COUNT(song.id) AS songCount,
+            SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+        FROM artist
+            LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
+            LEFT JOIN song ON sam.songId = song.id
+        WHERE artist.name LIKE '%' || :query || '%' AND (song.inLibrary IS NOT NULL OR song.dateDownload IS NOT NULL)
+        GROUP BY artist.id
+        HAVING songCount > 0
+        ORDER BY artist.bookmarkedAt ASC
+        LIMIT :previewSize
+    """)
+    fun searchArtists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Artist>>
+
+    @Query("""
+        SELECT 
+            artist.*,
+            COUNT(song.id) AS songCount,
+            SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+        FROM artist
+            LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
+            LEFT JOIN song ON sam.songId = song.id
+        WHERE artist.name LIKE '%' || :query || '%' AND song.inLibrary IS NOT NULL AND song.isLocal
+        GROUP BY artist.id
+        HAVING songCount > 0
+        LIMIT :previewSize
+    """)
+    fun searchLocalArtists(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Artist>>
+
+
+    @Transaction
+    @Query("""
+        SELECT song.* 
+        FROM song_artist_map JOIN song ON song_artist_map.songId = song.id 
+        WHERE song_artist_map.artistId IN (SELECT id FROM artist WHERE name LIKE '%' || :query || '%') AND song.inLibrary IS NOT NULL 
+        LIMIT :previewSize
+    """)
+    fun searchArtistSongs(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<Song>>
+
+    @Query("SELECT * FROM artist WHERE name LIKE '%' || :query || '%' LIMIT :previewSize")
+    fun artistsByNameFuzzy(query: String, previewSize: Int = Int.MAX_VALUE): Flow<List<ArtistEntity>>
+
+    @Query("SELECT * FROM artist WHERE isLocal != 1")
+    fun allRemoteArtists(): Flow<List<ArtistEntity>>
+
+    /**
+     * All local artists in insertion order, so callers that merge duplicates can pick the oldest
+     * row of a group without another sort.
+     */
+    @Query("SELECT * FROM artist WHERE isLocal = 1 ORDER BY artist.rowId ASC")
+    fun allLocalArtists(): List<ArtistEntity>
+
+    @Query("""
+        SELECT 
+            artist.*,
+            COUNT(song.id) AS songCount,
+            SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+        FROM artist
+            LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
+            LEFT JOIN song ON sam.songId = song.id
+            LEFT JOIN (
+                SELECT 
+                    song AS songId, 
+                    SUM(count) AS songTotalPlays
+                FROM playCount
+                WHERE year > :fromYear OR (year = :fromYear AND month >= :fromMonth)
+                GROUP BY song
+            ) AS pc ON sam.songId = pc.songId
+        WHERE song.inLibrary IS NOT NULL
+        GROUP BY artist.id
+        ORDER BY SUM(pc.songTotalPlays) DESC
+        LIMIT :limit
+    """)
+    fun mostPlayedArtists(fromYear: Int, fromMonth: Int, limit: Int = 6): Flow<List<Artist>>
+
+    @RawQuery(observedEntities = [ArtistEntity::class, SongArtistMap::class, SongEntity::class])
+    fun _getArtists(query: SupportSQLiteQuery): Flow<List<Artist>>
+
+    fun artists(filter: ArtistFilter, sortType: ArtistSortType, descending: Boolean, localOnly: Boolean? = null): Flow<List<Artist>> {
+        val orderBy = when (sortType) {
+            ArtistSortType.CREATE_DATE -> "artist.rowId ASC"
+            ArtistSortType.NAME -> "artist.name COLLATE NOCASE ASC"
+            ArtistSortType.SONG_COUNT -> "songCount ASC"
+        }
+
+        val where = when (filter) {
+            ArtistFilter.DOWNLOADED -> "song.dateDownload IS NOT NULL"
+            ArtistFilter.LIBRARY -> "song.inLibrary IS NOT NULL"
+            ArtistFilter.LIKED -> "artist.bookmarkedAt IS NOT NULL"
+        } + if (localOnly == null) {
+            ""
+        } else if (localOnly) {
+            " AND artist.isLocal = 1"
+        } else {
+            " AND artist.isLocal = 0"
+        }
+
+        val having = when (filter) {
+            ArtistFilter.DOWNLOADED -> "AND downloadCount > 0"
+            else -> ""
+        }
+
+        val query = SimpleSQLiteQuery("""
+            SELECT 
+                artist.*,
+                COUNT(song.id) AS songCount,
+                SUM(CASE WHEN song.dateDownload IS NOT NULL THEN 1 ELSE 0 END) AS downloadCount
+            FROM artist
+                LEFT JOIN song_artist_map sam ON artist.id = sam.artistId
+                LEFT JOIN song ON sam.songId = song.id
+            WHERE $where
+            GROUP BY artist.id
+            HAVING songCount >= 0 $having
+            ORDER BY $orderBy
+        """)
+
+        return _getArtists(query).map { artists ->
+            artists
+                .filter { it.artist.isYouTubeArtist || it.artist.isLocal } // TODO: add ui to filter by local or remote or something idk
+                .reversed(descending)
+        }
+    }
+
+    fun artistsInLibraryAsc() = artists(ArtistFilter.LIBRARY, ArtistSortType.CREATE_DATE, false)
+    fun artistsBookmarkedAsc() = artists(ArtistFilter.LIKED, ArtistSortType.CREATE_DATE, false)
+    fun artistsLocalBookmarkedAsc() = artists(ArtistFilter.LIKED, ArtistSortType.CREATE_DATE, false, true)
+
+    /**
+     * Representative artwork path for each local artist from its library songs, preferring a local
+     * album cover and falling back to a song's embedded artwork. MIN() keeps the choice stable
+     * across rescans.
+     */
+    @Query("""
+        SELECT sam.artistId AS artistId,
+               COALESCE(
+                   MIN(CASE WHEN album.isLocal = 1 THEN album.thumbnailUrl END),
+                   MIN(CASE WHEN song.isLocal = 1 THEN song.thumbnailUrl END)
+               ) AS thumbnailUrl
+        FROM song_artist_map sam
+            INNER JOIN song ON sam.songId = song.id
+            LEFT JOIN album ON song.albumId = album.id
+        WHERE song.isLocal = 1
+            AND song.inLibrary IS NOT NULL
+        GROUP BY sam.artistId
+    """)
+    fun localArtistThumbnails(): Flow<List<LocalArtistThumbnail>>
+
+    /** Whether [path] is the file of a song in the library. */
+    @Query("SELECT EXISTS(SELECT 1 FROM song WHERE localPath = :path AND inLibrary IS NOT NULL)")
+    fun isLibrarySongPath(path: String): Flow<Boolean>
+
+    /** Local artists whose saved artwork is non-local or the file of a song in the library. */
+    @Query("""
+        SELECT id FROM artist
+        WHERE isLocal = 1
+            AND thumbnailUrl IS NOT NULL
+            AND (thumbnailUrl NOT LIKE '/%'
+                OR EXISTS (SELECT 1 FROM song
+                    WHERE song.localPath = artist.thumbnailUrl AND song.inLibrary IS NOT NULL))
+    """)
+    fun localArtistsWithUsableThumbnail(): Flow<List<String>>
+    // endregion
+
+    // region Artist Songs Sort
+    @Transaction
+    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY inLibrary")
+    fun artistSongsByCreateDateAsc(artistId: String): Flow<List<Song>>
+
+    @Transaction
+    @Query("SELECT song.* FROM song_artist_map JOIN song ON song_artist_map.songId = song.id WHERE artistId = :artistId AND inLibrary IS NOT NULL ORDER BY title COLLATE NOCASE ASC")
+    fun artistSongsByNameAsc(artistId: String): Flow<List<Song>>
+
+    fun artistSongs(artistId: String, sortType: ArtistSongSortType, descending: Boolean) =
+        when (sortType) {
+            ArtistSongSortType.CREATE_DATE -> artistSongsByCreateDateAsc(artistId)
+            ArtistSongSortType.NAME -> artistSongsByNameAsc(artistId)
+        }.map { it.reversed(descending) }
+    // endregion
+    // endregion
+
+    // region Inserts
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(artist: ArtistEntity)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insert(map: SongArtistMap)
+    // endregion
+
+    // region Updates
+    @Update
+    fun update(artist: ArtistEntity)
+
+    @Transaction
+    fun update(artist: ArtistEntity, artistPage: ArtistPage) {
+        update(
+            artist.copy(
+                name = artistPage.artist.title,
+                thumbnailUrl = artistPage.artist.thumbnail?.resize(544, 544),
+                lastUpdateTime = LocalDateTime.now()
+            )
+        )
+    }
+
+    /**
+     * Relink participations of [oldId] to [newId]. Rows whose song is already linked to [newId]
+     * would violate the (songId, artistId) primary key, so they are left behind for
+     * [deleteSongArtistMap] to remove.
+     */
+    @Transaction
+    @Query("UPDATE OR IGNORE song_artist_map SET artistId = :newId WHERE artistId = :oldId")
+    fun updateSongArtistMap(oldId: String, newId: String)
+
+    @Query("DELETE FROM song_artist_map WHERE artistId = :artistId")
+    fun deleteSongArtistMap(artistId: String)
+    // endregion
+
+    // region Deletes
+    @Delete
+    fun delete(artist: ArtistEntity)
+
+   @Query("""
+        DELETE FROM Artist
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM song_artist_map
+            WHERE song_artist_map.artistId = :artistId
+        )
+        AND id = :artistId
+    """)
+    fun safeDeleteArtist(artistId: String)
+
+    @Transaction
+    @Query("DELETE FROM artist WHERE isLocal = 1")
+    fun nukeLocalArtists()
+    // endregion
+}

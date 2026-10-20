@@ -1,0 +1,6 @@
+Echopod Music 1.0.0
+
+Initial release of Echopod Music, a fork of OuterTune.
+- New app identity, icon, and application ID.
+- Can be installed alongside OuterTune.
+- Backup transfer instructions are available for OuterTune users.

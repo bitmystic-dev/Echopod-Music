@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- This file hosts strings specific to AsterTune. This separation allows us to easily recycle translations from upstream InnerTune,
+while also allowing users to translate our app as well. New, specific strings to AsterTune go here. -->
+
+<resources>
+<!-- General -->
+    <string name="android_auto">Android Auto</string>
+
+<!-- Bottom navigation -->
+    <string name="folders">Klasörler</string>
+    <string name="local_files">Yerel</string>
+    <string name="library">Kütüphane</string>
+
+<!-- Home -->
+    <string name="recent_activity">Son etkinlikler</string>
+
+<!-- History screen-->
+    <string name="local_history">Yerel</string>
+    <string name="queue_local_history">Geçmiş (yerel)</string>
+    <string name="queue_remote_history">Geçmiş (uzak)</string>
+    <string name="remote_history">Uzak</string>
+
+<!-- Library screens -->
+    <string name="library_filter">Kütüphane filtresi</string>
+    <string name="library_empty">Kütüphane içeriğiniz burada görünecek</string>
+    <string name="missing_media_permission_warning">Yerel medya için depolama izni gereklidir. İzin vermek için dokunun.</string>
+
+<!-- Queue -->
+    <string name="queues_title">Sıralar</string>
+    <string name="create_queue">Yeni sıra</string>
+    <string name="queue_searched_songs_ot">Arama: </string>
+    <string name="song_added_to_queue">\"%s\" sıraya eklendi</string>
+    <string name="song_added_to_queue_end">\"%s\" sıranın sonuna eklendi</string>
+    <string name="song_playing_in_new_queue">\"%s\" yeni bir sırada çalınıyor</string>
+    <string name="queues_empty">Sıra yok</string>
+
+<!-- Playlist -->
+    <string name="auto_playlist">Otomatik çalma listesi</string>
+
+<!-- Menu -->
+    <string name="select">Seçim modu</string>
+    <string name="like_all">Tümünü beğen</string>
+    <string name="more_settings">Diğer ayarlar</string>
+    <string name="delete_lyric_confirm">\"%s\" için kaydedilen şarkı sözlerini silmek istiyor musunuz?</string>
+    <string name="tap_show_more">Daha fazla bilgi göstermek için dokunun</string>
+
+<!-- Player -->
+    <string name="err_invalid_ytm_song">Şarkı çalınamadı. Yalnızca YouTube Music üzerinden erişilebilen içerikler çalınabilir</string>
+    <string name="err_play_next_on_error">Bir hata oluştu. Sonraki şarkı çalınıyor</string>
+    <string name="err_stop_on_error">Bir hata oluştu. Çalma durduruldu</string>
+    <string name="err_stop_on_too_many_errors">Çok fazla hata oluştu. Çalma durduruldu</string>
+    <string name="wait_to_reconnect">Yeniden bağlanmayı bekleyin</string>
+
+<!-- Sort menu -->
+    <string name="sort_by_date_modified">Değiştirilme tarihi</string>
+    <string name="sort_by_date_released">Yayınlanma tarihi</string>
+    <string name="sort_by_like_date">Beğenilme tarihi</string>
+    <string name="sort_by_play_count">Çalma sayısı</string>
+    <string name="sort_by_track_number">Parça numarası</string>
+    <string name="sort_by_download_date">İndirilme tarihi</string>
+
+<!-- Dialog -->
+    <string name="bits_per_sample">Örnek başına bit</string>
+    <string name="create_sync_playlist">Çalma listesini eşitle</string>
+    <string name="create_sync_playlist_description">Not: Bu, YouTube Music ile eşitlemeyi sağlar. Daha sonra DEĞİŞTİRİLEMEZ. Eşitlenen çalma listelerine yerel şarkılar ekleyemezsiniz.</string>
+    <string name="disc_number">Disk numarası</string>
+    <string name="extra_details">Ek ayrıntılar</string>
+    <string name="file_path">Dosya yolu</string>
+    <string name="track_number">Parça numarası</string>
+    <string name="play_count">Çalma sayısı</string>
+    <string name="playlist_add_local_to_synced_note">Not: Eşitlenen veya uzak çalma listelerine yerel şarkı eklemek desteklenmez. Diğer tüm birleşimler geçerlidir</string>
+    <string name="playlist_missing_note">Çalma listeleri eksik mi? Ayarlarda okuma ve yazma eşitleme modunu etkinleştirmek için buraya dokunun</string>
+    <string name="toggle_lyrics">Şarkı sözlerini göster/gizle</string>
+
+<!-- Sync-->
+    <string name="sync_progress_active">YouTube hesabıyla eşitleniyor…</string>
+    <string name="sync_progress_success">Eşitleme tamamlandı</string>
+
+<!-- Settings -->
+    <string name="prefs_advanced">Gelişmiş</string>
+    <string name="settings_debug">Hata ayıklama</string>
+
+    <string name="grp_account_sync">Hesap ve eşitleme</string>
+    <string name="grp_appearance_controls">Görünüm ve kontroller</string>
+    <string name="grp_audio">Ses</string>
+    <string name="grp_behavior">Davranış</string>
+    <string name="grp_display">Ekran</string>
+    <string name="grp_extra_scanner_settings">Ek tarayıcı ayarları</string>
+    <string name="grp_general">Genel</string>
+    <string name="grp_interface">Arayüz</string>
+    <string name="grp_layout">Düzen</string>
+    <string name="grp_library_and_content">Kütüphane ve içerik</string>
+	<string name="grp_localization">Dil ve bölge</string>
+    <string name="grp_lyrics_format">Biçimlendirme</string>
+    <string name="grp_lyrics_parser">Ayrıştırıcı</string>
+    <string name="grp_lyrics_source">Şarkı sözü kaynakları</string>
+    <string name="grp_manual_scanner">Elle tarama</string>
+    <string name="grp_more_settings">Diğer ayarlar</string>
+    <string name="grp_now_playing">Şimdi çalıyor</string>
+    <string name="grp_proxy">Proxy</string>
+    <string name="grp_sync">Eşitleme</string>
+
+<!-- About settings -->
+    <string name="app_info_title">Uygulama bilgileri</string>
+    <string name="check_for_update">Güncellemeleri denetle</string>
+    <string name="checking_for_update">Güncellemeler denetleniyor</string>
+    <string name="device_info_title">Cihaz bilgileri</string>
+    <string name="ffmpeg_lgpl">Bu yazılım, LGPLv2.1 lisansı altında FFmpeg projesinin kütüphanelerini kullanır</string>
+    <string name="help_bug_report_action">Hata raporu gönder (GitHub üzerinden)</string>
+    <string name="help_contact_email_inquiries">Diğer sorular (e-posta adresini kopyalamak için dokunun)</string>
+    <string name="help_support_forum">Yardım ve destek (GitHub üzerinden)</string>
+    <string name="no_updates_available">Güncelleme yok</string>
+    <string name="oss_licenses_title">Açık kaynak lisansları</string>
+    <string name="wiki">Viki</string>
+
+<!-- Contributions -->
+    <string name="all_contributors">Katkıda bulunan herkesi göster</string>
+    <string name="att_based_on">Temel alınan proje</string>
+    <string name="att_contributor">Katkıda bulunan</string>
+    <string name="att_lead_developer">Baş geliştirici</string>
+    <string name="att_maintainer">Bakım sorumlusu</string>
+    <string name="att_project_support">Proje desteği</string>
+    <string name="att_translator">Çevirmen (%s)</string>
+    <string name="attrib_zhuang">InnerTune için Zion Huang</string>
+    <string name="attribution_title">Katkıda bulunanlar</string>
+    <string name="special_thanks">Özel teşekkürler</string>
+
+<!-- Appearance settings -->
+    <string name="new_interface">Yeni arayüz düzeni</string>
+    <string name="player_background_blur">Bulanık</string>
+    <string name="player_background_default">Temayı izle</string>
+    <string name="player_background_gradient">Renk geçişi</string>
+    <string name="player_background_style">Oynatıcı arka plan biçimi</string>
+    <string name="show_queue_title">Oynatıcıda sıra adını göster</string>
+    <string name="show_liked_and_downloaded_playlist">Kütüphanede beğenilen ve indirilen şarkıların çalma listelerini göster</string>
+    <string name="slim_navbar_title">İnce gezinme çubuğu</string>
+    <string name="slim_navbar_description">Gezinme çubuğunun yüksekliğini azaltmak için metin etiketlerini kaldır</string>
+    <string name="slider_style_title">Kaydırıcı biçimi</string>
+    <string name="slider_style_squiggly">Dalgalı</string>
+    <string name="slider_style_default">Varsayılan</string>
+    <string name="slider_style_slim">İnce</string>
+    <string name="tab_arrangement">Sekmeleri düzenle</string>
+    <string name="tab_arrangement_disable_tip">--- Devre dışı bırakmak için buranın altına sürükleyin ---</string>
+    <string name="tab_arrangement_home_required">Ana Sayfa sekmesi zorunludur.</string>
+    <string name="tablet_ui_title">Tablet arayüzünü zorla</string>
+    <string name="tablet_ui_title_description">Büyük ekranlar için iyileştirilmiş bölünmüş arayüzü zorla. En düşük genişlik gereksinimleri karşılanmıyorsa bu ayarın etkisi olmaz</string>
+    <string name="filter_arrangement">Filtreleri düzenle</string>
+
+<!-- Content settings -->
+    <string name="like_autodownload">Beğenilen şarkıları otomatik indir</string>
+    <string name="action_logout_tooltip">Tamamen çıkış yapmak için bu çıkış düğmesini kullanmadan önce web portalında YouTube hesabınızdan çıkış yapın</string>
+    <string name="token_adv_login_description">Bu, GELİŞMİŞ bir oturum açma yöntemidir. Web portalına alternatif olarak oturum açma belirtecinizi buraya doğrudan girebilir veya güncelleyebilirsiniz. Örneğin bu, birden fazla cihazda oturum açmayı hızlandırabilir. Uygulamanın ayrıştıramadığı geçersiz belirteç biçimleri kabul edilmez</string>
+    <string name="token_hidden">Belirteci göstermek için dokunun</string>
+    <string name="token_shown">Kopyalamak veya düzenlemek için tekrar dokunun</string>
+    <string name="sync_conflict_add_only">Tüm yerel içeriği koru, yeni uzak içeriği ekle</string>
+    <string name="sync_conflict_overwrite">Yerel içeriğin üzerine uzak içeriği yaz</string>
+    <string name="sync_conflict_title">Çakışma çözümü</string>
+    <string name="sync_mode">Eşitleme modu</string>
+    <string name="sync_mode_ro">Salt okunur (uzak içeriği görüntüle)</string>
+    <string name="sync_mode_rw">Okuma ve yazma (uzak içerikte değişiklik yapmaya da izin ver)</string>
+    <string name="ytm_sync">YouTube Music hesabıyla otomatik eşitle</string>
+    <string name="wifi_only">Yalnızca Wi-Fi</string>
+
+<!-- Player settings -->
+    <string name="audio_decoder_ffmpeg_only">FFmpeg kod çözücülerine öncelik ver</string>
+    <string name="audio_decoder_preference">Ses kod çözücüsü</string>
+    <string name="audio_decoder_system_only">Yalnızca sistem kod çözücüleri</string>
+    <string name="audio_decoder_system_with_ffmpeg">Sistem kod çözücülerine öncelik ver</string>
+
+
+    <string name="audio_offload">Offload özelliğini etkinleştir</string>
+    <string name="audio_offload_description">Ses çalmak için offload ses yolunu kullan. Bu özelliği etkinleştirmek güç tüketimini azaltabilir, ancak ses çalma veya son işleme sorunlarına neden olabilir. Desteklenmeyen kodeklerde veya cihazlarda bu ayarın etkisi olmaz</string>
+    <string name="keep_alive_title">Sistemin uygulamayı kapatmasını önle</string>
+    <string name="keep_alive_description">AsterTune\'un arka planda kapatılmasını önlemek için kalıcı bir ön plan hizmeti kullan</string>
+    <string name="persistent_queue_desc_ot">Uygulama başladığında daha önce açık olan sıraları geri yükle</string>
+    <string name="min_playback_duration">En düşük çalma süresi</string>
+    <string name="min_playback_duration_description">Bir şarkının \"çalındı\" olarak sayılması için çalınması gereken en kısa süre</string>
+    <string name="sleep_timer_fade">Sesi kademeli azalt</string>
+    <string name="sleep_timer_fade_duration">Ses azaltma süresi</string>
+    <string name="sleep_timer_fade_duration_desc">Durmadan önce sesin azaltılacağı saniye sayısı</string>
+    <string name="sleep_timer_default_time">Varsayılan uyku zamanlayıcısı süresi</string>
+    <string name="sleep_timer_minutes_short">%d dk</string>
+    <string name="sleep_timer_second_unit">sn</string>
+    <string name="sleep_timer_stop">Zamanlayıcıyı durdur</string>
+    <string name="sleep_timer_show_on_player">Oynatıcı ekranı düğmesi</string>
+    <string name="sleep_timer_show_on_player_desc">Oynatıcı ekranında uyku zamanlayıcısı düğmesini göster</string>
+    <string name="swipe2Queue">Sıraya eklemek için kaydır</string>
+    <string name="swipe2Queue_description">Bir şarkıyı, çalan şarkının hemen sonrasına eklemek için üzerinde kaydırın</string>
+    <string name="seek_increment">İleri/geri sarma aralığı</string>
+
+
+<!--Lyrics settings -->
+    <string name="lyrics_font_Size">Yazı tipi boyutu</string>
+    <string name="lyrics_karaoke_title">Karaoke biçiminde şarkı sözleri.</string>
+    <string name="lyrics_karaoke_description">Şarkı sözlerinin kelime kelime eşitlenmesini sağlar. Şarkı sözü biçiminin bunu desteklemesi gerekir.</string>
+    <string name="lyrics_karaoke_hz_title">Karaoke sözlerinin güncelleme hızını ayarla</string>
+    <string name="lyrics_multiline_title">Çok satırlı şarkı sözlerini oku</string>
+    <string name="lyrics_multiline_description">Eşitleme noktaları arasındaki tüm satırları tek bir şarkı sözü metni olarak işle</string>
+    <string name="lyrics_prefer_local">Yerel şarkı sözü dosyalarını tercih et</string>
+    <string name="lyrics_prefer_local_description">Bulut sağlayıcılarını kullanmadan önce yerel şarkı sözü dosyalarına öncelik ver. Bulut sağlayıcılarına öncelik vermek için bu seçeneği kapatın</string>
+    <string name="lyrics_prefetch_title">Sonraki şarkı sözlerini önceden getir</string>
+    <string name="lyrics_prefetch_description">Sıradaki şarkıların sözlerini önceden getir</string>
+    <string name="lyrics_prefetch_count_title">Sözleri önceden getirilecek şarkı sayısı</string>
+    <string name="lyrics_settings_title">Şarkı sözleri</string>
+    <string name="lyrics_synced_clickable">Tıklanabilir şarkı sözleri</string>
+    <string name="lyrics_trim_title">Şarkı sözlerinin başındaki ve sonundaki boşlukları kaldır</string>
+
+<!-- Local player settings -->
+    <string name="local_library_enable_title">Yerel medyayı etkinleştir</string>
+    <string name="local_library_enable_description">Devre dışı bırakıldığında yerel kütüphane uygulamada gizlenir</string>
+    <string name="local_player_settings_title">Yerel medya</string>
+    <string name="flat_subfolders_title">Alt klasörleri düzleştir</string>
+    <string name="flat_subfolders_description">Diskteki dosya yapısını korumak için devre dışı bırakın</string>
+    <string name="disable_lm_confirm">Yerel medya özelliklerini devre dışı bırakmak istiyor musunuz? Kütüphane içeriğiniz etkilenmeyecektir.</string>
+
+<!-- Scanner settings -->
+    <string name="auto_scanner_title">Otomatik tara</string>
+    <string name="auto_scanner_description">Uygulama açıldığında yerel şarkıları ve özel indirme klasörlerini düzenli olarak yenile</string>
+    <string name="auto_scanner_tooltip">Yerel medyada otomatik tarama, mevcut şarkıların meta verilerini yeniden yüklemez. Meta verileri de yenilemek istiyorsanız yeniden tarama kutusunu işaretleyerek elle taramayı kullanın.</string>
+
+    <string name="scan_paths_title">Tarama konumlarını yapılandır…</string>
+    <string name="scan_paths_description">Şarkı taraması için yerel depolamadaki klasörleri seçin</string>
+    <string name="scan_paths_tooltip">Tüm alt klasörler de etkilenecektir</string>
+    <string name="scan_paths_add_folder">Yeni klasör ekle</string>
+    <string name="scan_paths_incl">Tarama yolları</string>
+    <string name="scan_paths_excl">Taramadan hariç tutulan yollar</string>
+    <string name="scanner_local_title">Yerel tarayıcı</string>
+    <string name="scanner_manual_btn">Elle eşitlemeyi başlat</string>
+    <string name="scanner_rejected_dir">Geçersiz seçim. Tarama klasörü, indirme klasörünün alt klasörü veya indirme klasörünün kendisi olamaz</string>
+    <string name="scanner_warning">Varsayılan olarak tarayıcı, yukarıda aksi belirtilmedikçe mevcut şarkıların meta verilerini YENİDEN YÜKLEMEZ. Kütüphanenizin boyutuna bağlı olarak bu işlem biraz zaman alabilir.</string>
+
+<!-- Scanner progress strings-->
+    <string name="scanner_missing_storage_perm">Yerel medya tarayıcısının çalışması için depolama izni gereklidir</string>
+
+    <string name="scanner_auto_end">Yerel medya ve indirilen şarkılar yenilendi!</string>
+    <string name="scanner_auto_start">Yerel medya ve şarkı indirme klasörleri yenileniyor…</string>
+
+    <string name="scanner_btn_idle">Tara</string>
+    <string name="scanner_progress_complete">Tarama tamamlandı</string>
+    <string name="scanner_progress_discovering">Keşfediliyor…</string>
+    <string name="scanner_progress_processing">İşleniyor…</string>
+	<string name="scanner_progress_scanning">Taranıyor…</string>
+    <string name="scanner_progress_syncing">Eşitleniyor…</string>
+	<string name="scanner_scan_fail">Tarama başarısız oldu</string>
+
+	<string name="scanner_ytm_link_fail">YouTube sanatçılarını bağlama işlemi başarısız oldu</string>
+	<string name="scanner_ytm_link_start">YouTube sanatçılarını bağlama işlemi başlatılıyor…</string>
+	<string name="scanner_ytm_link_success">YouTube sanatçılarını bağlama işlemi tamamlandı</string>
+
+    <plurals name="scanner_n_song_processed">
+        <item quantity="one">%d şarkı işlendi</item>
+        <item quantity="other">%d şarkı işlendi</item>
+    </plurals>
+    <plurals name="scanner_n_song_found">
+        <item quantity="one">%d şarkı bulundu</item>
+        <item quantity="other">%d şarkı bulundu</item>
+    </plurals>
+
+<!-- Scanner parameter settings-->
+    <string name="scanner_strict_file_name_title">Dosya adlarını kesin eşleştir</string>
+    <string name="scanner_strict_file_name_description">Etkinleştirildiğinde dosya adları göz ardı EDİLMEZ. Örneğin \"Song.ogg\", \"Song.flac\" dosyasından farklı bir şarkı sayılır. Tarayıcı duyarlılığı ayarı uygulanmaya devam eder</string>
+    <string name="scanner_strict_file_paths_title">Meta veriler yerine dosya yollarını eşleştir</string>
+    <string name="scanner_strict_file_paths_description">Meta verilerin tüm akıllı eşleştirmelerini devre dışı bırakır. Dosyalar yerel depolamada taşınırsa sorunlara neden olabilir, ancak aynı şarkının farklı klasörlerde bulunmasına izin verir</string>
+    <string name="scanner_sensitivity_title">Tarayıcı duyarlılığını yapılandır</string>
+    <string name="scanner_sensitivity_L0">YouTube\'da arama etkinse YouTube\'un sağladığı ilk sonucu kullan, değilse başlığı eşleştir</string>
+    <string name="scanner_sensitivity_L1">Başlığı eşleştir</string>
+    <string name="scanner_sensitivity_L2">Başlığı ve sanatçıları eşleştir</string>
+    <string name="scanner_sensitivity_L3">Başlığı, sanatçıları ve albümleri eşleştir</string>
+
+
+    <string name="scanner_variant_rescan">Tüm kütüphaneyi yeniden tara ve tüm şarkıların meta verilerini yeniden yükle</string>
+    <string name="scanner_online_artist_linking">Yerel dosyalardaki sanatçıları YouTube Music\'teki sanatçılarla bağlamayı dene</string>
+
+<!-- Storage setting -->
+    <string name="download_on_wifi_only_title">Yalnızca Wi-Fi üzerinden indir</string>
+    <string name="download_on_wifi_only_description">Mobil veri üzerinden indirme. Mobil veri kullanırken sıraya alınan şarkılar, Wi-Fi kullanılabilir olduğunda otomatik olarak indirilmeye başlar</string>
+    <string name="download_waiting_for_wifi">Wi-Fi bağlantısı kurulduğunda indirilecek</string>
+    <string name="clear_downloads_confirm">Tüm indirmeleri kaldırmak istiyor musunuz? Yalnızca ana indirme klasöründeki indirmeler kaldırılacaktır.</string>
+    <string name="clear_image_cache_confirm">Görüntü önbelleğini temizlemek istiyor musunuz? Mevcut tüm albüm küçük resimleri kaldırılacaktır.</string>
+    <string name="clear_song_cache_confirm">Şarkı önbelleğini temizlemek istiyor musunuz?</string>
+    <string name="dl_calculate_size">İndirme boyutunu hesaplamak için dokunun</string>
+    <string name="dl_extra_path_title">Ek içe aktarma konumlarını yapılandır…</string>
+    <string name="dl_extra_path_description">Bu klasörlerdeki şarkılar yalnızca daha önce çalınmışsa veya bir çalma listesine eklenmişse uygulamada görünür</string>
+    <string name="dl_migrate_title">İndirmeleri harici depolamaya taşı…</string>
+    <string name="dl_migrate_description">İndirmeleri uygulamanın dahili depolamasından cihazın harici depolamasına taşı</string>
+    <string name="dl_migrate_confirm">TÜM dahili indirmeler \"%s\" konumuna taşınacak ve bu işlem geri alınamaz. Devam edilsin mi?</string>
+    <string name="dl_main_path_title">Harici indirme klasörünü ayarla…</string>
+    <string name="dl_main_path_description">İndirmelerin kaydedileceği konumu seçin</string>
+    <string name="dl_oobe_tooltip">Şarkılar uygulamanın özel dahili depolamasına indirilir. Şarkıları harici depolamaya indirmek için önce bir klasör seçmelisiniz. Daha sonra Ayarlar\'dan klasör ekleyebilir, değiştirebilir veya kaldırabilir ya da Dahili İndirmeleri Harici İndirmelere taşıyabilirsiniz.</string>
+    <string name="dl_rescan_title">İndirme klasörlerini yeniden tara…</string>
+    <string name="dl_rescan_description">Dosya veya klasörler değiştiyse veritabanını ve indirme kaydını güncelle</string>
+	<string name="dl_rescan_confirm">Tüm indirme klasörleri şimdi yeniden taransın mı? Kütüphanenizin boyutuna bağlı olarak bu işlem birkaç dakika sürebilir.</string>
+    <string name="dl_size_used_cache">Dahili: %s kullanıldı</string>
+    <string name="dl_size_used_main">Harici: %s kullanıldı</string>
+    <string name="dl_size_used_extra">Ek içe aktarımlar: %s kullanıldı</string>
+    <string name="dl_storage_tooltip">Dahili İndirmeler uygulamanın özel depolamasına kaydedilir ve root olmadan bunlara erişilemez.\n\nHarici İndirmeler cihazınızın harici depolamasına (ör. /sdcard veya micro SD kartlar) kaydedilir ve bir dosya yöneticisiyle doğrudan erişilebilir veya düzenlenebilir. AsterTune bu klasördeki dosyaları değiştirebileceği veya silebileceği için Harici İndirmeler klasörü olarak yalnızca şarkı indirmelerine ayrılmış boş bir klasör seçmenizi öneririz.\n\nEk İçe Aktarma klasörleri salt okunurdur ve ek şarkıları yüklemek için kullanılır. AsterTune bu klasörlerdeki dosyaları asla değiştirmez veya silmez. Bu klasörleri gelişmiş bölümünden seçebilirsiniz.\n\nİndirmeleri temizlediğinizde yalnızca dahili şarkılar silinir. Harici İndirmeler ve Ek İçe Aktarma şarkıları, şarkı menüsünden veya bir dosya yöneticisiyle elle kaldırılmalıdır.\n\nİndirme klasörlerini yeniden tara: Harici İndirmeler ve Ek İçe Aktarma klasörlerindeki şarkı indirmeleri otomatik olarak GÜNCELLENMEZ. Bir dosya yöneticisiyle dosyaları elle ekler, kaldırır veya değiştirirseniz uygulamanın veritabanını güncellemek için indirme klasörlerini yeniden taramanız gerekebilir. Bu seçenek gelişmiş bölümündedir.</string>
+    <string name="restart_to_apply_changes">Değişikliklerin uygulanması için uygulama yeniden başlatılmalıdır</string>
+
+<!-- Privacy settings -->
+    <string name="pause_remote_listen_history">Dinleme geçmişini YouTube Music ile paylaşmayı duraklat</string>
+
+<!-- Backup and restore settings -->
+    <string name="err_restore_incompatible_database">Uyumsuz veritabanı geri yüklenemedi</string>
+    <string name="import_innertune_tooltip">Teknik kısıtlamalar nedeniyle bazı sorunlar oluşabilse de InnerTune yedeklerinin geri yüklenmesi desteklenir. Çatallanmış sürümler DESTEKLENMEZ.</string>
+	<string name="restore_lm_tooltip">Uygulamanın yeni kurulumlarında özel indirme ve yerel medya tarama yolları çalışmayabilir. Bunu çözmek için bu yolları kaldırıp yeniden ekleyin.</string>
+
+<!-- Experimental settings -->
+    <string name="experimental_settings_title">Deneysel</string>
+    <string name="dev_settings_title">Geliştirici ayarlarını etkinleştir</string>
+    <string name="dev_settings_description">Geliştirme amaçlı ek gelişmiş ayarları gösterir</string>
+
+    <string name="swipe_to_skip_title">Şarkıyı değiştirmek için yatay kaydır</string>
+    <string name="swipe_to_skip_description">Şarkıları değiştirmek için oynatıcıda yatay kaydırmayı etkinleştir</string>
+
+    <string name="tap_artwork_to_show_lyrics_title">Şarkı sözlerini göstermek için kapağa dokun</string>
+    <string name="tap_artwork_to_show_lyrics_description">Oynatıcıda kapağa dokunulduğunda şarkı sözlerini göster</string>
+
+    <string name="max_queues_title">En fazla sıra sayısı</string>
+
+<!-- Setup wizard -->
+    <string name="oobe_welcome_message">AsterTune\'a hoş geldiniz</string>
+    <string name="oobe_welcome_tip">En iyi deneyim için tema, YouTube hesabı, yerel medya ve indirmeler gibi temel ayarları kişiselleştiren hızlı kurulumu tamamlamanızı öneririz.</string>
+
+    <!-- Landing -->
+    <string name="oobe_ytm_integration">YouTube Music entegrasyonu</string>
+    <string name="oobe_ytm_integration_description">Favori parçalarınıza kolayca erişin</string>
+    <string name="oobe_ad_free_exp">YouTube reklamları yok</string>
+    <string name="oobe_ad_free_exp_description">Kesintisiz müzik dinlemenin keyfini çıkarın</string>
+    <string name="oobe_local_music_support">Kapsamlı yerel müzik desteği</string>
+    <string name="oobe_local_music_support_description">Müzik dosyalarınızı çalın (ör. MP3, OGG, FLAC vb.)</string>
+    <string name="oobe_cross_platform_sync">Platformlar arası eşitleme</string>
+    <string name="oobe_cross_platform_sync_description">Müziğinizi tüm cihazlarınızda eşitlenmiş tutun</string>
+    <string name="oobe_use_backup">Yedeğim var</string>
+
+    <!-- Interface setup page -->
+    <string name="oobe_interface_subtitle">AsterTune\'un görünümünü ve gösterdiği içeriği özelleştirin.</string>
+
+    <!-- Account setup page -->
+    <string name="oobe_ytm_logon_title">Hesap</string>
+    <string name="oobe_ytm_logon_subtitle">Eşitlemek ve hesabınıza özel içeriğe erişmek için YouTube Music hesabınızda oturum açın. Bu isteğe bağlıdır.</string>
+
+    <!-- Local media setup -->
+    <string name="oobe_local_media_title">Yerel medya</string>
+    <string name="oobe_local_media_subtitle">Müziğinizin bulunduğu klasörleri seçin. İçe aktarılacak şarkıları bulmak için bu klasörleri tarayacağız.</string>
+
+    <!-- Downloads -->
+    <string name="oobe_cache_title">Şarkı önbelleği</string>
+    <string name="oobe_cache_subtitle">Şarkı önbelleği boyutunu seçin. Bu, internet veya YouTube API\'sinden kaynaklanan çalma sorunlarını azaltmaya yardımcı olabilir</string>
+    <string name="oobe_downloads_title">Şarkı indirmeleri</string>
+    <string name="oobe_downloads_subtitle">İndirilen şarkıların kaydedileceği bir klasör seçin.</string>
+
+    <!-- Setup complete -->
+    <string name="oobe_complete_title">Her şey hazır!</string>
+    <string name="oobe_complete">AsterTune kuruldu ve kullanıma hazır. Müziğinizi keşfedin, yeni parçalar bulun ve deneyimin keyfini çıkarın!</string>
+
+<!-- M3U -->
+    <string name="import_failed_songs">İçe aktarılamadı</string>
+    <string name="import_success_songs">Başarıyla içe aktarıldı</string>
+    <string name="m3u_export">M3U dosyası olarak dışa aktar</string>
+    <string name="m3u_import_failed">Şarkı bulunamadı. M3U dosyası geçersiz veya eşleşen şarkı bulunamadı</string>
+    <string name="m3u_import_playlist">Çalma listesi içe aktar (m3u)</string>
+    <string name="m3u_import_playlist_failed">İçe aktarma başarısız oldu</string>
+    <string name="m3u_ytm_lookup">Uygulama veritabanında bulunamayan şarkıları YouTube Music\'te ara</string>
+
+<!-- Misc -->
+    <string name="action_back">Geri</string>
+    <string name="action_next">İleri</string>
+    <string name="action_skip">Atla</string>
+    <string name="action_cancel">İptal</string>
+    <string name="info">Bilgi</string>
+    <string name="off">Kapalı</string>
+    <plurals name="second">
+        <item quantity="one">%d saniye</item>
+        <item quantity="other">%d saniye</item>
+    </plurals>
+    <string name="speed_very_slow">Çok yavaş</string>
+    <string name="speed_slow">Yavaş</string>
+    <string name="speed_medium">Orta</string>
+    <string name="speed_fast">Hızlı</string>
+    <string name="speed_very_fast">Çok hızlı</string>
+</resources>
