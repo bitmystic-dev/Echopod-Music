@@ -3,48 +3,52 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - canary
-  pull_request:
-    branches:
       - '**'
+    paths-ignore:
+      - 'README.md'
+      - 'fastlane/**'
+      - 'assets/**'
+      - '.github/**/*.md'
+      - '.github/FUNDING.yml'
+      - '.github/ISSUE_TEMPLATE/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: recursive
 
-      - name: set up JDK 21
+      - name: Decode google-services.json
+        run: echo ${{ secrets.GOOGLE_SERVICES }} | base64 -d >> app/google-services.json
+
+      - name: Decode Keystore
+        run: echo ${{ secrets.KEYSTORE }} | base64 -d >> app/music-debug.jks
+
+      - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: 21
-          distribution: "temurin"
+          java-version: 17
+          distribution: "zulu"
           cache: 'gradle'
 
-      - name: Accept SDK licenses
-        run: yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+      - name: Build Full Debug APK and run jvm tests
+        run: ./gradlew assembleFullDebug lintFullDebug testFullDebugUnitTest --stacktrace -DskipFormatKtlint
+        env:
+          MUSIC_DEBUG_KEYSTORE_FILE: 'music-debug.jks'
+          MUSIC_DEBUG_SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          MUSIC_DEBUG_SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
 
-      - name: Run library regression tests
+      - name: Prepare clean universal APK folder
         run: |
-          ./gradlew \
-            :innertube:test \
-            --tests com.zionhuang.innertube.AccountMenuResponseTest \
-            --tests com.zionhuang.innertube.NextTabEndpointTest \
-            --tests com.zionhuang.innertube.HomeListShelfTest \
-            :lrclib:test \
-            --tests com.dd3boh.lrclib.LrcLibSelectionTest \
-            :simpmusic:test \
-            --tests com.dd3boh.simpmusic.SimpMusicSelectionTest \
-            --stacktrace -DskipFormatKtlint
+          mkdir -p final_apk_output
+          # Grabs the built universal debug apk from the full variant output path
+          BUILT_APK=$(find app/build/outputs/apk/full/debug -name "*.apk" | head -n 1)
+          cp "$BUILT_APK" "final_apk_output/Echopod-Music-Full-Debug.apk"
 
-      - name: Build debug APK and run jvm tests
-        run: ./gradlew assembleCoreDebug lintCoreDebug testCoreDebugUnitTest --stacktrace -DskipFormatKtlint
-
-      - name: Upload APK
+      - name: Upload Raw APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app
-          path: app/build/outputs/apk/core/debug/*.apk
+          name: Echopod-Music-Full-Debug-APK
+          path: final_apk_output/Echopod-Music-Full-Debug.apk
+          if-no-files-found: error
+          compression-level: 0
