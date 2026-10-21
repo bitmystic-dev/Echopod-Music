@@ -337,6 +337,9 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="oobe_cross_platform_sync">Cross-Platform Sync</string>
     <string name="oobe_cross_platform_sync_description">Keep your music in harmony across devices</string>
     <string name="oobe_use_backup">I have a backup</string>
+    <string name="oobe_slide_to_continue">Slide to continue</string>
+    <string name="oobe_start_listening">Start Listening</string>
+    <string name="oobe_skip_to_listening">Skip and start listening</string>
 
     <!-- Interface setup page -->
     <string name="oobe_interface_subtitle">Customize how Echopod Music looks and what content it shows you.</string>
