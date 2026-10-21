@@ -115,7 +115,7 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                var outputFileName = "AsterTune-${variant.versionName}-${output.baseName}-${output.versionCode}.apk"
+                val outputFileName = "Echopod-Music-${variant.versionName}-${output.baseName}-${output.versionCode}.apk"
                 output.outputFileName = outputFileName
             }
     }
