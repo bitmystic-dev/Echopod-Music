@@ -1,0 +1,78 @@
+name: Build Final Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing tag to attach the draft release to
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+          cache: gradle
+
+      - name: Accept Android SDK licenses
+        run: yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      - name: Set up release signing
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+        run: |
+          printf '%s' "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release.jks
+          {
+            printf 'storeFile=release.jks\n'
+            printf 'keyAlias=%s\n' "$RELEASE_KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$RELEASE_KEY_PASSWORD"
+            printf 'storePassword=%s\n' "$RELEASE_STORE_PASSWORD"
+          } > keystore.properties
+
+      - name: Verify release tag exists
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          git check-ref-format "refs/tags/$RELEASE_TAG"
+          git show-ref --verify --quiet "refs/tags/$RELEASE_TAG" || {
+            echo "Tag '$RELEASE_TAG' does not exist. Create and push the tag before dispatching this workflow."
+            exit 1
+          }
+
+      - name: Build core release APK
+        run: ./gradlew assembleCoreRelease
+
+      - name: Resolve FFmpeg libraries
+        run: git clone https://github.com/mikooomich/ffmpeg-android-maker-prebuilt/ -b audio ffMetadataEx/ffmpeg-android-maker
+
+      - name: Build full release APK
+        run: ./gradlew assembleFullRelease
+
+      - name: Create draft GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: Echopod Music ${{ inputs.release_tag }}
+          draft: true
+          prerelease: ${{ github.ref_name == 'pre-release' }}
+          files: |
+            app/build/outputs/apk/core/release/*.apk
+            app/build/outputs/apk/full/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
