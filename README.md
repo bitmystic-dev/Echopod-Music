@@ -22,7 +22,7 @@
 Echopod Music is an Android application based on [OuterTune](https://github.com/OuterTune/OuterTune).<br />
 Built with Material Design 3, it combines the functionality of a local media player and a YouTube Music client.
 
-To transfer your data from OuterTune, see [Migrating from OuterTune to Echopod Music](#migrating-from-outertune-to-Echopod Music).
+To transfer your data from OuterTune, see [Migrating from OuterTune to Echopod Music](#migrating-from-outertune-to-Echopod-Music).
 
 ## Features
 
