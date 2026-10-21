@@ -1,4 +1,4 @@
-# AsterTune
+# Echopod Music
 
 **A Material Design 3 YouTube Music client and local media player for Android**
 
@@ -11,18 +11,18 @@
 [<img src="assets/badge_github.png" alt="Get it on GitHub" height="40">](https://github.com/bitmystic-dev/echopod-music/releases/latest)
 <!--
 [<img src="assets/badge_obtainium.png" alt="Get it on Obtainium" height="40">](https://github.com/bitmystic-dev/echopod-music/releases/latest)
-[<img src="assets/badge_fdroid.svg" alt="Get it on F-Droid" height="40">](https://f-droid.org/packages/io.github.yuuichi_s.astertune/)
-[<img src="assets/IzzyOnDroidButtonGreyBorder.svg" alt="Get it on IzzyOnDroid" height="40">](https://apt.izzysoft.de/fdroid/index/apk/io.github.yuuichi_s.astertune)
+[<img src="assets/badge_fdroid.svg" alt="Get it on F-Droid" height="40">](https://f-droid.org/packages/io.github.yuuichi_s.Echopod Music/)
+[<img src="assets/IzzyOnDroidButtonGreyBorder.svg" alt="Get it on IzzyOnDroid" height="40">](https://apt.izzysoft.de/fdroid/index/apk/io.github.yuuichi_s.Echopod Music)
 -->
 
 [English](README.md) | [日本語](README_ja.md)
 
 ## Overview
 
-AsterTune is an Android application based on [OuterTune](https://github.com/OuterTune/OuterTune).<br />
+Echopod Music is an Android application based on [OuterTune](https://github.com/OuterTune/OuterTune).<br />
 Built with Material Design 3, it combines the functionality of a local media player and a YouTube Music client.
 
-To transfer your data from OuterTune, see [Migrating from OuterTune to AsterTune](#migrating-from-outertune-to-astertune).
+To transfer your data from OuterTune, see [Migrating from OuterTune to Echopod Music](#migrating-from-outertune-to-Echopod Music).
 
 ## Features
 
@@ -44,7 +44,7 @@ To transfer your data from OuterTune, see [Migrating from OuterTune to AsterTune
     - Lyrics import and editing
 
 
-## Migrating from OuterTune to AsterTune
+## Migrating from OuterTune to Echopod Music
 
 You can transfer your data using the app's built-in backup feature.
 
@@ -53,7 +53,7 @@ You can transfer your data using the app's built-in backup feature.
 > Downloaded audio files are not included, so you will need to download them again after restoring the backup.
 
 1. In OuterTune, open **Settings → Backup and Restore**, tap **Backup**, and save the backup file.
-2. In AsterTune, open **Settings → Backup and Restore**, tap **Restore**, and select the backup file you saved.
+2. In Echopod Music, open **Settings → Backup and Restore**, tap **Restore**, and select the backup file you saved.
 
 
 ## Improvements in This Fork
@@ -137,10 +137,10 @@ You can transfer your data using the app's built-in backup feature.
 
 ## Submitting Translations
 
-We use Weblate to translate AsterTune. For more details or to submit translations, visit our [Weblate page](https://hosted.weblate.org/projects/yuuichi-s-astertune/).
+We use Weblate to translate Echopod Music. For more details or to submit translations, visit our [Weblate page](https://hosted.weblate.org/projects/yuuichi-s-Echopod Music/).
 
-<a href="https://hosted.weblate.org/projects/yuuichi-s-astertune/">
-<img src="https://hosted.weblate.org/widget/yuuichi-s-astertune/multi-auto.svg" alt="Translation status" />
+<a href="https://hosted.weblate.org/projects/yuuichi-s-Echopod Music/">
+<img src="https://hosted.weblate.org/widget/yuuichi-s-Echopod Music/multi-auto.svg" alt="Translation status" />
 </a>
 
 ## Credits
